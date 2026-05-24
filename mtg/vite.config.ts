@@ -75,7 +75,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@mtg': path.resolve(__dirname, './src'),
-        '@mtgminigames': path.resolve(__dirname, '../mtgminigames/src'),
       },
     },
     server: { proxy },

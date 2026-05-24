@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { loadCardDatabase } from '@mtg/lib/card-db'
-import { canonicalNameKey } from '@mtg/lib/card-names'
-import { sortIdentity } from '@mtg/lib/color-filter'
-import { getAllStaples } from '@mtg/lib/staples'
-import type { CardRecord } from '@mtg/types/card'
-import type { ManaColor } from '@mtg/types/mtg'
+import { loadCardDatabase } from '../lib/card-db'
+import { canonicalNameKey } from '../lib/card-names'
+import { sortIdentity } from '../lib/color-filter'
+import { getAllStaples } from '../lib/staples'
+import type { CardRecord } from '../types/card'
+import type { ManaColor } from '../types/mtg'
 
 export const MAX_GUESSES = 5
 

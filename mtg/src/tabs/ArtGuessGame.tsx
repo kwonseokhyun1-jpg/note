@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { getMostPopularPrintingArt } from '@mtg/api/scryfall'
-import { suggestCardNames } from '@mtg/lib/card-name-resolve'
-import { canonicalNameKey } from '@mtg/lib/card-names'
-import type { CardRecord } from '@mtg/types/card'
+import { getMostPopularPrintingArt } from '../api/scryfall'
+import { suggestCardNames } from '../lib/card-name-resolve'
+import { canonicalNameKey } from '../lib/card-names'
+import type { CardRecord } from '../types/card'
 import {
   CardHints,
   GuessForm,
@@ -21,7 +21,7 @@ import {
   useMinigamePools,
   type GameMode,
   type GamePhase,
-} from '../shared/minigame-shared'
+} from './minigame-shared'
 
 const REVEAL_LEVELS = [7, 14, 24, 38, 58]
 

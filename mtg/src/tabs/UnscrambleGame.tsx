@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { suggestCardNames } from '@mtg/lib/card-name-resolve'
-import type { CardRecord } from '@mtg/types/card'
+import { suggestCardNames } from '../lib/card-name-resolve'
+import type { CardRecord } from '../types/card'
 import {
   CardHints,
   GuessForm,
@@ -20,7 +20,7 @@ import {
   useMinigamePools,
   type GameMode,
   type GamePhase,
-} from '../shared/minigame-shared'
+} from './minigame-shared'
 
 type RoundState = {
   card: CardRecord
