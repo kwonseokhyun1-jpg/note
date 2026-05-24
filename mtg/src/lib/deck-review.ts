@@ -1,7 +1,7 @@
 import type { CardRecord } from '../types/card'
 import type { DeckAnalysis } from '../types/mtg'
 import { getCardByNameLocal } from './card-db'
-import { chatCompletion, hasOpenAiConfigured } from './openai-chat'
+import { chatCompletion } from './groq-chat'
 
 export type DeckReviewResult = {
   review: string
@@ -94,15 +94,14 @@ function localDeckReview(
 
   parts.push(
     '',
-    '_AI deck review is available when an OpenAI API key is configured at build time._',
+    '_AI deck review uses Groq when the API proxy is available (Vercel or local dev with GROQ_API_KEY)._',
   )
 
   return parts.join('\n\n')
 }
 
-async function callOpenAI(summary: string): Promise<string> {
+async function callGroqReview(summary: string): Promise<string> {
   return chatCompletion({
-    model: 'gpt-4o-mini',
     temperature: 0.5,
     max_tokens: 1200,
     messages: [
@@ -117,15 +116,12 @@ export async function generateDeckReview(
   gameChangers: CardRecord[],
 ): Promise<DeckReviewResult> {
   const summary = buildDeckSummary(analysis, gameChangers)
-  const openaiKey = hasOpenAiConfigured()
 
-  if (openaiKey) {
-    try {
-      const review = await callOpenAI(summary)
-      return { review, source: 'ai' }
-    } catch {
-      /* fall through to local */
-    }
+  try {
+    const review = await callGroqReview(summary)
+    return { review, source: 'ai' }
+  } catch {
+    /* fall through to local */
   }
 
   return {

@@ -99,6 +99,20 @@ function uid() {
   return Math.random().toString(36).slice(2, 9)
 }
 
+function useLandscapeMobile(): boolean {
+  const [landscapeMobile, setLandscapeMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(orientation: landscape) and (max-height: 500px)')
+    const update = () => setLandscapeMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  return landscapeMobile
+}
+
 function isPlayerDead(
   player: Player,
   players: Player[],
@@ -124,6 +138,7 @@ export function LifeCounter() {
   const [cmdDamage, setCmdDamage] = useState<Record<string, Record<string, number>>>({})
   const [advancedOpen, setAdvancedOpen] = useState<Record<string, boolean>>({})
   const [fullscreenOpen, setFullscreenOpen] = useState(false)
+  const landscapeMobile = useLandscapeMobile()
 
   useEffect(() => {
     if (!fullscreenOpen) return
@@ -386,6 +401,7 @@ export function LifeCounter() {
     player: Player | undefined,
     color: string,
     rotated: boolean,
+    compactLandscape: boolean,
   ) => {
     if (!player) {
       return (
@@ -401,7 +417,7 @@ export function LifeCounter() {
 
     return (
       <div
-        className={`relative flex h-full min-h-0 w-full flex-col items-center justify-center overflow-hidden p-1.5 sm:p-3 [@media(max-height:500px)]:p-1 ${
+        className={`@container [container-type:size] relative flex h-full min-h-0 w-full flex-col overflow-hidden ${
           dead ? 'opacity-80' : ''
         }`}
         style={{
@@ -409,61 +425,125 @@ export function LifeCounter() {
           transform: rotated ? 'rotate(180deg)' : undefined,
         }}
       >
-        <p className="shrink-0 text-xs font-bold text-black/80 sm:text-sm [@media(max-height:500px)]:text-[10px]">
-          {player.name}
-        </p>
-
-        <div className="mt-1 flex w-full min-w-0 max-w-xs shrink items-center justify-center gap-2 sm:mt-2 sm:gap-4 [@media(max-height:500px)]:mt-0.5 [@media(max-height:500px)]:gap-1">
-          <button
-            type="button"
-            onClick={() => adjustLife(player.id, -1)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/15 text-2xl font-light text-black transition hover:bg-black/25 sm:h-16 sm:w-16 sm:rounded-2xl sm:text-4xl [@media(max-height:500px)]:h-7 [@media(max-height:500px)]:w-7 [@media(max-height:500px)]:text-lg"
-            aria-label={`Decrease ${player.name} life`}
-          >
-            −
-          </button>
-          <span
-            className={`min-w-[2.5rem] shrink text-center text-3xl font-bold leading-none text-black sm:min-w-[4rem] sm:text-5xl [@media(max-height:500px)]:min-w-[2rem] [@media(max-height:500px)]:text-2xl ${
-              player.life <= 0 ? 'text-red-900' : ''
+        <div
+          className={
+            compactLandscape
+              ? 'flex shrink-0 justify-center px-[4cqmax] pt-[5cqmax]'
+              : 'flex shrink-0 justify-center px-[4cqmin] pt-[5cqmin]'
+          }
+        >
+          <p
+            className={`max-w-full truncate text-center font-bold text-black/80 ${
+              compactLandscape
+                ? 'text-[clamp(1rem,9cqmax,2.75rem)]'
+                : 'text-[clamp(0.875rem,6cqmin,2.5rem)]'
             }`}
           >
-            {player.life}
-          </span>
+            {player.name}
+          </p>
+        </div>
+
+        <div
+          className={
+            compactLandscape
+              ? 'flex min-h-0 flex-1 items-center justify-center px-[3cqmax]'
+              : 'flex min-h-0 flex-1 items-center justify-center px-[3cqmin]'
+          }
+        >
+          <div
+            className={`flex w-full max-w-full items-center justify-center ${
+              compactLandscape
+                ? 'gap-[clamp(0.5rem,7cqmax,2.5rem)]'
+                : 'gap-[clamp(0.5rem,5cqmin,2.5rem)]'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => adjustLife(player.id, -1)}
+              className={`flex aspect-square shrink-0 items-center justify-center bg-black/15 font-light text-black transition hover:bg-black/25 ${
+                compactLandscape
+                  ? 'rounded-[1.5cqmax] h-[clamp(3rem,24cqmax,10rem)] w-[clamp(3rem,24cqmax,10rem)] text-[clamp(2rem,18cqmax,6rem)]'
+                  : 'rounded-[1.5cqmin] h-[clamp(2.75rem,20cqmin,10rem)] w-[clamp(2.75rem,20cqmin,10rem)] text-[clamp(1.75rem,14cqmin,6rem)]'
+              }`}
+              aria-label={`Decrease ${player.name} life`}
+            >
+              −
+            </button>
+            <span
+              className={`shrink text-center font-bold leading-none text-black ${
+                compactLandscape
+                  ? 'text-[clamp(3.5rem,44cqmax,16rem)]'
+                  : 'text-[clamp(3rem,32cqmin,16rem)]'
+              } ${player.life <= 0 ? 'text-red-900' : ''}`}
+            >
+              {player.life}
+            </span>
+            <button
+              type="button"
+              onClick={() => adjustLife(player.id, 1)}
+              className={`flex aspect-square shrink-0 items-center justify-center bg-black/15 font-light text-black transition hover:bg-black/25 ${
+                compactLandscape
+                  ? 'rounded-[1.5cqmax] h-[clamp(3rem,24cqmax,10rem)] w-[clamp(3rem,24cqmax,10rem)] text-[clamp(2rem,18cqmax,6rem)]'
+                  : 'rounded-[1.5cqmin] h-[clamp(2.75rem,20cqmin,10rem)] w-[clamp(2.75rem,20cqmin,10rem)] text-[clamp(1.75rem,14cqmin,6rem)]'
+              }`}
+              aria-label={`Increase ${player.name} life`}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div
+          className={
+            compactLandscape
+              ? 'flex shrink-0 flex-col items-center gap-[clamp(0.25rem,3.5cqmax,1rem)] px-[3cqmax] pb-[5cqmax]'
+              : 'flex shrink-0 flex-col items-center gap-[clamp(0.25rem,2.5cqmin,1rem)] px-[3cqmin] pb-[5cqmin]'
+          }
+        >
+          <div
+            className={`flex flex-wrap justify-center ${
+              compactLandscape
+                ? 'gap-[clamp(0.25rem,3cqmax,0.75rem)]'
+                : 'gap-[clamp(0.25rem,2cqmin,0.75rem)]'
+            }`}
+          >
+            {[-5, -10, 5, 10].map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => adjustLife(player.id, d)}
+                className={`bg-black/15 font-semibold text-black hover:bg-black/25 ${
+                  compactLandscape
+                    ? 'rounded-[1cqmax] px-[clamp(0.5rem,4cqmax,1.25rem)] py-[clamp(0.125rem,2cqmax,0.625rem)] text-[clamp(0.75rem,6cqmax,1.75rem)]'
+                    : 'rounded-[1cqmin] px-[clamp(0.375rem,3cqmin,1.25rem)] py-[clamp(0.125rem,1.5cqmin,0.625rem)] text-[clamp(0.625rem,4.5cqmin,1.5rem)]'
+                }`}
+              >
+                {d > 0 ? `+${d}` : d}
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
-            onClick={() => adjustLife(player.id, 1)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/15 text-2xl font-light text-black transition hover:bg-black/25 sm:h-16 sm:w-16 sm:rounded-2xl sm:text-4xl [@media(max-height:500px)]:h-7 [@media(max-height:500px)]:w-7 [@media(max-height:500px)]:text-lg"
-            aria-label={`Increase ${player.name} life`}
+            data-life-advanced
+            onClick={() => toggleAdvanced(player.id)}
+            className={`bg-black/15 font-semibold text-black hover:bg-black/25 ${
+              compactLandscape
+                ? 'rounded-[1cqmax] px-[clamp(0.5rem,5cqmax,1.5rem)] py-[clamp(0.125rem,2.5cqmax,0.75rem)] text-[clamp(0.75rem,6cqmax,1.5rem)]'
+                : 'rounded-[1cqmin] px-[clamp(0.5rem,4cqmin,1.5rem)] py-[clamp(0.125rem,2cqmin,0.75rem)] text-[clamp(0.625rem,4.5cqmin,1.25rem)]'
+            }`}
           >
-            +
+            Advanced {advanced ? '▾' : '▸'}
           </button>
         </div>
-
-        <div className="mt-1 flex shrink-0 flex-wrap justify-center gap-1 [@media(max-height:500px)]:hidden sm:mt-2">
-          {[-5, -10, 5, 10].map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => adjustLife(player.id, d)}
-              className="rounded-lg bg-black/15 px-1.5 py-0.5 text-[10px] font-semibold text-black hover:bg-black/25 sm:px-2 sm:text-xs"
-            >
-              {d > 0 ? `+${d}` : d}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          data-life-advanced
-          onClick={() => toggleAdvanced(player.id)}
-          className="mt-1 shrink-0 rounded-lg bg-black/15 px-2 py-0.5 text-[10px] font-semibold text-black hover:bg-black/25 sm:mt-2 sm:px-3 sm:py-1 sm:text-xs [@media(max-height:500px)]:mt-0.5"
-        >
-          Advanced {advanced ? '▾' : '▸'}
-        </button>
 
         {advanced && (
           <div
-            className="absolute inset-1.5 z-10 overflow-y-auto rounded-lg bg-white/95 p-2 text-black shadow-lg sm:inset-3 sm:rounded-xl sm:p-3 [@media(max-height:500px)]:inset-1 [@media(max-height:500px)]:p-1.5"
+            className={
+              compactLandscape
+                ? 'absolute inset-[3cqmax] z-10 overflow-y-auto rounded-[2cqmax] bg-white/95 p-[3cqmax] text-black shadow-lg'
+                : 'absolute inset-[3cqmin] z-10 overflow-y-auto rounded-[2cqmin] bg-white/95 p-[3cqmin] text-black shadow-lg'
+            }
             data-life-advanced
           >
             {renderAdvanced(player, true)}
@@ -554,7 +634,7 @@ export function LifeCounter() {
                 key={slot.player?.id ?? slot.className}
                 className={`h-full min-h-0 min-w-0 ${slot.className}`}
               >
-                {renderFullscreenQuadrant(slot.player, slot.color, slot.rotated)}
+                {renderFullscreenQuadrant(slot.player, slot.color, slot.rotated, landscapeMobile)}
               </div>
             ))}
             {players.length === 5 && (

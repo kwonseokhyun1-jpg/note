@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { loadCardDatabase } from '../lib/card-db'
-import { canonicalNameKey } from '../lib/card-names'
-import { sortIdentity } from '../lib/color-filter'
-import { getAllStaples } from '../lib/staples'
-import type { CardRecord } from '../types/card'
-import type { ManaColor } from '../types/mtg'
+import { loadCardDatabase } from '../../../mtg/src/lib/card-db'
+import { canonicalNameKey } from '../../../mtg/src/lib/card-names'
+import { sortIdentity } from '../../../mtg/src/lib/color-filter'
+import { getAllStaples } from '../../../mtg/src/lib/staples'
+import type { CardRecord } from '../../../mtg/src/types/card'
+import type { ManaColor } from '../../../mtg/src/types/mtg'
 
 export const MAX_GUESSES = 5
 
@@ -100,30 +100,29 @@ export function isCorrectGuess(guess: string, card: CardRecord): boolean {
   return guessNamesForCard(card).has(canonicalNameKey(guess))
 }
 
-function getDisplaySetName(card: CardRecord): string | undefined {
-  const printing =
-    card.printings?.find((p) => p.id === card.id) ?? card.printings?.[0]
-  return printing?.set_name
-}
-
 function formatCmc(cmc: number): string {
   if (cmc === 0) return '0'
   return String(cmc)
 }
 
+function formatUsdPrice(card: CardRecord): string {
+  const usd = card.prices?.usd
+  if (usd == null || usd === '') return 'Unknown'
+  const n = parseFloat(usd)
+  if (Number.isNaN(n)) return 'Unknown'
+  return `$${n.toFixed(2)}`
+}
+
 export function CardHints({
   card,
   guessCount,
-  setName,
 }: {
   card: CardRecord
   guessCount: number
-  setName?: string
 }) {
   if (guessCount < 1) return null
 
   const colors = sortIdentity(card.color_identity)
-  const displaySet = setName ?? getDisplaySetName(card)
 
   return (
     <div className="rounded-lg border border-[var(--color-mtg-gold-dim)]/50 bg-[var(--color-mtg-panel)] p-3">
@@ -160,9 +159,9 @@ export function CardHints({
             )}
           </div>
         )}
-        {guessCount >= 4 && displaySet && (
+        {guessCount >= 4 && (
           <p className="text-[var(--color-mtg-muted)]">
-            <span className="font-medium text-white">Set:</span> {displaySet}
+            <span className="font-medium text-white">Price:</span> {formatUsdPrice(card)}
           </p>
         )}
       </div>

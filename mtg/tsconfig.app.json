@@ -19,7 +19,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "@mtgminigames": ["../mtgminigames/src"],
+      "@mtgminigames/*": ["../mtgminigames/src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../mtgminigames/src"]
 }

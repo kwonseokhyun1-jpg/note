@@ -336,7 +336,7 @@ export function DeckEditor({
                   <>
                     {deckReview.source === 'ai' && (
                       <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--color-mtg-muted)]">
-                        AI review
+                        Groq AI review
                       </p>
                     )}
                     <div

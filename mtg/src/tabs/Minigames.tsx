@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { ArtGuessGame } from './ArtGuessGame'
-import { UnscrambleGame } from './UnscrambleGame'
+import { ArtGuessGame } from '@mtgminigames/games/ArtGuessGame'
+import { UnscrambleGame } from '@mtgminigames/games/UnscrambleGame'
 
 type MinigameId = 'menu' | 'art-guess' | 'unscramble'
 

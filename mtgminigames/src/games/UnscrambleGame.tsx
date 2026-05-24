@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { suggestCardNames } from '../lib/card-name-resolve'
-import type { CardRecord } from '../types/card'
+import { suggestCardNames } from '../../../mtg/src/lib/card-name-resolve'
+import type { CardRecord } from '../../../mtg/src/types/card'
 import {
   CardHints,
   GuessForm,
@@ -20,7 +20,7 @@ import {
   useMinigamePools,
   type GameMode,
   type GamePhase,
-} from './minigame-shared'
+} from '../shared/minigame-shared'
 
 type RoundState = {
   card: CardRecord
@@ -129,7 +129,7 @@ export function UnscrambleGame() {
           Unscramble
         </h2>
         <p className="mt-1 text-sm text-[var(--color-mtg-muted)]">
-          Unscramble the Commander-legal card name. Hints unlock each guess: CMC, type, colors, then set.
+          Unscramble the Commander-legal card name. Hints unlock each guess: CMC, type, colors, then price.
         </p>
         <ModeToggle mode={mode} onSwitch={switchMode} easyCount={easyPool.length} />
       </div>

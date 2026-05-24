@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { getMostPopularPrintingArt } from '../api/scryfall'
-import { suggestCardNames } from '../lib/card-name-resolve'
-import { canonicalNameKey } from '../lib/card-names'
-import type { CardRecord } from '../types/card'
+import { getMostPopularPrintingArt } from '../../../mtg/src/api/scryfall'
+import { suggestCardNames } from '../../../mtg/src/lib/card-name-resolve'
+import { canonicalNameKey } from '../../../mtg/src/lib/card-names'
+import type { CardRecord } from '../../../mtg/src/types/card'
 import {
   CardHints,
   GuessForm,
@@ -21,7 +21,7 @@ import {
   useMinigamePools,
   type GameMode,
   type GamePhase,
-} from './minigame-shared'
+} from '../shared/minigame-shared'
 
 const REVEAL_LEVELS = [7, 14, 24, 38, 58]
 
@@ -33,7 +33,6 @@ type RoundState = {
   guesses: string[]
   phase: GamePhase
   artImage?: string
-  artSetName?: string
   artLoading: boolean
 }
 
@@ -65,28 +64,18 @@ function newRound(pool: CardRecord[], previous?: CardRecord): RoundState {
   }
 }
 
-type PopularArt = {
-  image?: string
-  set_name?: string
-}
+const popularArtCache = new Map<string, string | undefined>()
 
-const popularArtCache = new Map<string, PopularArt>()
-
-async function resolvePopularArt(card: CardRecord): Promise<PopularArt> {
+async function resolvePopularArt(card: CardRecord): Promise<string | undefined> {
   const key = canonicalNameKey(card.name)
-  const cached = popularArtCache.get(key)
-  if (cached) return cached
+  if (popularArtCache.has(key)) return popularArtCache.get(key)
 
   const remote = await getMostPopularPrintingArt(card.name)
   const image = remote?.image
     ? getArtCropImage({ ...card, image: remote.image })
     : getArtCropImage(card)
-  const result: PopularArt = {
-    image,
-    set_name: remote?.set_name,
-  }
-  popularArtCache.set(key, result)
-  return result
+  popularArtCache.set(key, image)
+  return image
 }
 
 function getRevealPercent(round: RoundState): number {
@@ -148,14 +137,13 @@ export function ArtGuessGame() {
 
   const loadRoundArt = useCallback(async (roundState: RoundState) => {
     const roundId = ++roundIdRef.current
-    const art = await resolvePopularArt(roundState.card)
+    const artImage = await resolvePopularArt(roundState.card)
     if (roundId !== roundIdRef.current) return
     setRound((prev) =>
       prev?.card.id === roundState.card.id
         ? {
             ...prev,
-            artImage: art.image,
-            artSetName: art.set_name,
+            artImage,
             artLoading: false,
           }
         : prev,
@@ -226,7 +214,7 @@ export function ArtGuessGame() {
           Art Guess
         </h2>
         <p className="mt-1 text-sm text-[var(--color-mtg-muted)]">
-          Name the Commander-legal card from a zoomed-in art crop. Hints unlock each guess: CMC, type, colors, then set.
+          Name the Commander-legal card from a zoomed-in art crop. Hints unlock each guess: CMC, type, colors, then price.
         </p>
         <ModeToggle mode={mode} onSwitch={switchMode} easyCount={easyPool.length} />
       </div>
@@ -256,13 +244,7 @@ export function ArtGuessGame() {
         )}
       </div>
 
-      {hintCount > 0 && (
-        <CardHints
-          card={round.card}
-          guessCount={hintCount}
-          setName={round.artSetName}
-        />
-      )}
+      {hintCount > 0 && <CardHints card={round.card} guessCount={hintCount} />}
 
       {round.phase === 'playing' && !round.artLoading && (
         <GuessForm

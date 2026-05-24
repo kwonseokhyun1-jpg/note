@@ -2,11 +2,11 @@
 
 A Magic: The Gathering Commander toolkit:
 
-1. **Find Commander** — Theme/keyword matching with optional popularity sorting
-2. **Find Cards** — Natural language card search with semantic ability matching
-3. **Helper** — Deck validation, upgrades, and playtest
-4. **Finance** — Staples by color (non-lands), prices, deck value chart
-5. **Judge** — Rules chatbot with Comprehensive Rules sources
+1. **Find Commander**  Theme/keyword matching with optional popularity sorting
+2. **Find Cards**  Natural language card search with semantic ability matching
+3. **Helper**  Deck validation, upgrades, and playtest
+4. **Finance**  Staples by color (non-lands), prices, deck value chart
+5. **Judge**  Rules chatbot with Comprehensive Rules sources
 
 ## Run locally
 
