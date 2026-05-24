@@ -10,38 +10,82 @@ import { getSlangPartnerPairs, pairMatchesSlang } from './mtg-slang'
 export type PartnerKind =
   | 'partner'
   | 'partner-with'
+  | 'partner-variant'
   | 'friends-forever'
   | 'background'
   | 'doctors-companion'
 
 export type PartnerInfo = {
   kinds: PartnerKind[]
+  /** Slug for Partner—Variant lines (e.g. friends-forever, character-select). */
+  variant?: string
   partnerWithName?: string
+}
+
+function slugifyPartnerVariant(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function getPartnerVariant(text: string): string | undefined {
+  const match = text.match(/Partner[—–-]([^(]+?)\s*\(/i)
+  return match ? slugifyPartnerVariant(match[1]) : undefined
 }
 
 export function getPartnerInfo(commander: CommanderRecord): PartnerInfo {
   const text = commander.oracle_text
   const keywords = commander.keywords.map((k) => k.toLowerCase())
   const kinds: PartnerKind[] = []
+  let partnerWithName: string | undefined
+  let variant: string | undefined
 
   if (/partner with/i.test(text)) {
     kinds.push('partner-with')
-  } else if (keywords.includes('partner') || /\bPartner \(You can have two commanders/i.test(text)) {
-    kinds.push('partner')
+    const pw = text.match(/Partner with ([^(.\n]+)/i)
+    if (pw) partnerWithName = pw[1].trim().replace(/\.$/, '')
+  } else {
+    variant = getPartnerVariant(text)
+    if (variant) {
+      kinds.push('partner-variant')
+      if (variant === 'friends-forever') kinds.push('friends-forever')
+    } else if (
+      keywords.includes('partner') ||
+      /\bPartner \(You can have two commanders if both have partner/i.test(text)
+    ) {
+      kinds.push('partner')
+    }
   }
-  if (/friends forever/i.test(text) || keywords.includes('friends forever')) {
-    kinds.push('friends-forever')
-  }
+
   if (/choose a background/i.test(text)) kinds.push('background')
   if (/doctor's companion/i.test(text) || keywords.includes("doctor's companion")) {
     kinds.push('doctors-companion')
   }
 
-  let partnerWithName: string | undefined
-  const pw = text.match(/Partner with ([^(.\n]+)/i)
-  if (pw) partnerWithName = pw[1].trim().replace(/\.$/, '')
+  return { kinds: [...new Set(kinds)], variant, partnerWithName }
+}
 
-  return { kinds: [...new Set(kinds)], partnerWithName }
+/** Canonical pairing bucket — commanders must share the same bucket to pair (except background / doctor rules). */
+export function getPairGroup(commander: CommanderRecord): string | null {
+  if (isBackgroundCommander(commander)) return 'background-enchantment'
+
+  const text = commander.oracle_text
+  const keywords = commander.keywords.map((k) => k.toLowerCase())
+
+  if (/doctor's companion/i.test(text) || keywords.includes("doctor's companion")) {
+    return 'doctors-companion'
+  }
+
+  const info = getPartnerInfo(commander)
+  if (info.partnerWithName) return null
+  if (info.variant) return `variant:${info.variant}`
+  if (info.kinds.includes('partner')) return 'partner'
+  if (info.kinds.includes('background')) return 'background'
+
+  return null
 }
 
 export function isBackgroundCommander(c: CommanderRecord): boolean {
@@ -61,13 +105,20 @@ function combinedIdentity(a: CommanderRecord, b: CommanderRecord): ManaColor[] {
   return MANA_COLORS.filter((c) => set.has(c))
 }
 
+function variantLabel(variant: string): string {
+  return variant
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 function pairTypeLabel(primary: PartnerInfo, partner: PartnerInfo, a: CommanderRecord, b: CommanderRecord): string {
   if (primary.partnerWithName || partner.partnerWithName) return 'Partner with'
   if (primary.kinds.includes('background') && isBackgroundCommander(b)) return 'Background'
   if (partner.kinds.includes('background') && isBackgroundCommander(a)) return 'Background'
-  if (primary.kinds.includes('friends-forever') && partner.kinds.includes('friends-forever')) {
-    return 'Friends forever'
-  }
+  const sharedVariant = primary.variant && primary.variant === partner.variant ? primary.variant : undefined
+  if (sharedVariant === 'friends-forever') return 'Friends forever'
+  if (sharedVariant) return variantLabel(sharedVariant)
   if (
     (primary.kinds.includes('doctors-companion') && isTimeLordDoctor(b)) ||
     (partner.kinds.includes('doctors-companion') && isTimeLordDoctor(a))
@@ -85,24 +136,17 @@ export function canCommandersPair(a: CommanderRecord, b: CommanderRecord): boole
 
   if (infoA.partnerWithName && namesMatch(infoA.partnerWithName, b.name)) return true
   if (infoB.partnerWithName && namesMatch(infoB.partnerWithName, a.name)) return true
+  if (infoA.partnerWithName || infoB.partnerWithName) return false
 
-  if (infoA.kinds.includes('partner-with') || infoB.kinds.includes('partner-with')) {
-    return false
-  }
+  const groupA = getPairGroup(a)
+  const groupB = getPairGroup(b)
+  if (groupA && groupB && groupA === groupB) return true
 
-  if (infoA.kinds.includes('partner') && infoB.kinds.includes('partner')) {
-    return true
-  }
+  if (groupA === 'background' && groupB === 'background-enchantment') return true
+  if (groupA === 'background-enchantment' && groupB === 'background') return true
 
-  if (infoA.kinds.includes('friends-forever') && infoB.kinds.includes('friends-forever')) {
-    return true
-  }
-
-  if (infoA.kinds.includes('background') && isBackgroundCommander(b)) return true
-  if (infoB.kinds.includes('background') && isBackgroundCommander(a)) return true
-
-  if (infoA.kinds.includes('doctors-companion') && isTimeLordDoctor(b)) return true
-  if (infoB.kinds.includes('doctors-companion') && isTimeLordDoctor(a)) return true
+  if (groupA === 'doctors-companion' && isTimeLordDoctor(b)) return true
+  if (groupB === 'doctors-companion' && isTimeLordDoctor(a)) return true
 
   return false
 }
