@@ -150,8 +150,9 @@ export function matchCommanderPairs(
   colorFilter: ColorFilter,
   limit = 30,
   sort: CommanderSort = 'match',
+  options?: { raw?: boolean },
 ): CommanderPairMatch[] {
-  const intent = resolveCommanderIntent(theme, commanders)
+  const intent = resolveCommanderIntent(theme, commanders, options?.raw ?? false)
   const hasTheme = themeHasIntent(intent)
   const byName = buildNameIndex(commanders)
 

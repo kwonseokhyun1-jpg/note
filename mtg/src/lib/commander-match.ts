@@ -303,8 +303,9 @@ export function matchCommanders(
   colorFilter: ColorFilter,
   limit = 60,
   sort: CommanderSort = 'match',
+  options?: { raw?: boolean },
 ): CommanderMatch[] {
-  const intent = resolveCommanderIntent(theme, commanders)
+  const intent = resolveCommanderIntent(theme, commanders, options?.raw ?? false)
   const filtered = commanders.filter((c) =>
     fitsColorIdentity(c.color_identity, colorFilter),
   )
@@ -327,8 +328,9 @@ export function suggestSimilarCommanders(
   theme: string,
   colorFilter: ColorFilter,
   limit = 8,
+  options?: { raw?: boolean },
 ): CommanderMatch[] {
-  const intent = resolveCommanderIntent(theme, commanders)
+  const intent = resolveCommanderIntent(theme, commanders, options?.raw ?? false)
   if (!themeHasIntent(intent)) return []
 
   const filtered = commanders.filter((c) =>

@@ -44,8 +44,10 @@ export type CommanderIntent = {
   phrases: string[]
 }
 
-export function parseCommanderIntent(theme: string): CommanderIntent {
-  const { text: normalizedTheme } = normalizeWithTypos(theme)
+export function parseCommanderIntent(theme: string, raw = false): CommanderIntent {
+  const normalizedTheme = raw
+    ? theme.toLowerCase().replace(/[^\w\s+'/-]/g, ' ').replace(/\s+/g, ' ').trim()
+    : normalizeWithTypos(theme).text
 
   const archetypes = new Set(resolveThemeArchetypes(normalizedTheme))
   const phrases: string[] = []
@@ -146,8 +148,9 @@ export function enrichIntentWithSubtypes(
 export function resolveCommanderIntent(
   theme: string,
   commanders: Array<{ creature_types?: string[]; type_line: string }>,
+  raw = false,
 ): CommanderIntent {
-  const base = parseCommanderIntent(theme)
+  const base = parseCommanderIntent(theme, raw)
   return enrichIntentWithSubtypes(base, theme, knownSubtypesFromCommanders(commanders))
 }
 
