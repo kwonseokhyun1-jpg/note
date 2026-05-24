@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { getMostPopularPrintingArt } from '../../../mtg/src/api/scryfall'
-import { suggestCardNames } from '../../../mtg/src/lib/card-name-resolve'
-import { canonicalNameKey } from '../../../mtg/src/lib/card-names'
-import type { CardRecord } from '../../../mtg/src/types/card'
+import { getMostPopularPrintingArt } from '@mtg/api/scryfall'
+import { suggestCardNames } from '@mtg/lib/card-name-resolve'
+import { canonicalNameKey } from '@mtg/lib/card-names'
+import type { CardRecord } from '@mtg/types/card'
 import {
   CardHints,
   GuessForm,
@@ -139,7 +139,7 @@ export function ArtGuessGame() {
     const roundId = ++roundIdRef.current
     const artImage = await resolvePopularArt(roundState.card)
     if (roundId !== roundIdRef.current) return
-    setRound((prev) =>
+    setRound((prev: RoundState | null) =>
       prev?.card.id === roundState.card.id
         ? {
             ...prev,
@@ -160,15 +160,9 @@ export function ArtGuessGame() {
     [guess, showSuggestions],
   )
 
-  const guessesLeft = round ? MAX_GUESSES - round.guesses.length : MAX_GUESSES
-  const revealPct = round ? getRevealPercent(round) : REVEAL_LEVELS[0]
-  const image = round ? getCardImage(round.card) : undefined
-  const artImage = round?.artImage
-  const hintCount = round?.phase === 'playing' ? round.guesses.length : 0
-
   const startNextRound = useCallback(() => {
     if (pool.length === 0) return
-    setRound((prev) => newRound(pool, prev?.card))
+    setRound((prev: RoundState | null) => newRound(pool, prev?.card))
     setGuess('')
     setShowSuggestions(false)
     inputRef.current?.focus()
@@ -183,7 +177,7 @@ export function ArtGuessGame() {
       setGuess('')
 
       if (isCorrectGuess(trimmed, round.card)) {
-        setStreak((s) => s + 1)
+        setStreak((s: number) => s + 1)
         setRound({ ...round, guesses: [...round.guesses, trimmed], phase: 'won' })
         return
       }
@@ -203,9 +197,23 @@ export function ArtGuessGame() {
 
   if (loading) return <MinigameLoading />
 
-  if (loadError || !round || !image) {
-    return <MinigameError message={loadError ?? 'No cards available.'} />
+  if (loadError) return <MinigameError message={loadError} />
+
+  if (pool.length === 0) {
+    return <MinigameError message="No cards available." />
   }
+
+  if (!round) return <MinigameLoading />
+
+  const image = getCardImage(round.card)
+  if (!image) {
+    return <MinigameError message="No card art available for this round." />
+  }
+
+  const guessesLeft = MAX_GUESSES - round.guesses.length
+  const revealPct = getRevealPercent(round)
+  const artImage = round.artImage
+  const hintCount = round.phase === 'playing' ? round.guesses.length : 0
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">

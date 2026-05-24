@@ -435,7 +435,7 @@ export function LifeCounter() {
           <p
             className={`max-w-full truncate text-center font-bold text-black/80 ${
               compactLandscape
-                ? 'text-[clamp(1rem,9cqmax,2.75rem)]'
+                ? 'text-[clamp(0.875rem,7cqmax,2.25rem)]'
                 : 'text-[clamp(0.875rem,6cqmin,2.5rem)]'
             }`}
           >
@@ -453,7 +453,7 @@ export function LifeCounter() {
           <div
             className={`flex w-full max-w-full items-center justify-center ${
               compactLandscape
-                ? 'gap-[clamp(0.5rem,7cqmax,2.5rem)]'
+                ? 'gap-[clamp(0.5rem,5cqmax,2rem)]'
                 : 'gap-[clamp(0.5rem,5cqmin,2.5rem)]'
             }`}
           >
@@ -462,7 +462,7 @@ export function LifeCounter() {
               onClick={() => adjustLife(player.id, -1)}
               className={`flex aspect-square shrink-0 items-center justify-center bg-black/15 font-light text-black transition hover:bg-black/25 ${
                 compactLandscape
-                  ? 'rounded-[1.5cqmax] h-[clamp(3rem,24cqmax,10rem)] w-[clamp(3rem,24cqmax,10rem)] text-[clamp(2rem,18cqmax,6rem)]'
+                  ? 'rounded-[1.5cqmax] h-[clamp(2.75rem,18cqmax,8rem)] w-[clamp(2.75rem,18cqmax,8rem)] text-[clamp(1.75rem,13cqmax,4.5rem)]'
                   : 'rounded-[1.5cqmin] h-[clamp(2.75rem,20cqmin,10rem)] w-[clamp(2.75rem,20cqmin,10rem)] text-[clamp(1.75rem,14cqmin,6rem)]'
               }`}
               aria-label={`Decrease ${player.name} life`}
@@ -472,7 +472,7 @@ export function LifeCounter() {
             <span
               className={`shrink text-center font-bold leading-none text-black ${
                 compactLandscape
-                  ? 'text-[clamp(3.5rem,44cqmax,16rem)]'
+                  ? 'text-[clamp(3rem,28cqmax,11rem)]'
                   : 'text-[clamp(3rem,32cqmin,16rem)]'
               } ${player.life <= 0 ? 'text-red-900' : ''}`}
             >
@@ -483,7 +483,7 @@ export function LifeCounter() {
               onClick={() => adjustLife(player.id, 1)}
               className={`flex aspect-square shrink-0 items-center justify-center bg-black/15 font-light text-black transition hover:bg-black/25 ${
                 compactLandscape
-                  ? 'rounded-[1.5cqmax] h-[clamp(3rem,24cqmax,10rem)] w-[clamp(3rem,24cqmax,10rem)] text-[clamp(2rem,18cqmax,6rem)]'
+                  ? 'rounded-[1.5cqmax] h-[clamp(2.75rem,18cqmax,8rem)] w-[clamp(2.75rem,18cqmax,8rem)] text-[clamp(1.75rem,13cqmax,4.5rem)]'
                   : 'rounded-[1.5cqmin] h-[clamp(2.75rem,20cqmin,10rem)] w-[clamp(2.75rem,20cqmin,10rem)] text-[clamp(1.75rem,14cqmin,6rem)]'
               }`}
               aria-label={`Increase ${player.name} life`}
@@ -514,7 +514,7 @@ export function LifeCounter() {
                 onClick={() => adjustLife(player.id, d)}
                 className={`bg-black/15 font-semibold text-black hover:bg-black/25 ${
                   compactLandscape
-                    ? 'rounded-[1cqmax] px-[clamp(0.5rem,4cqmax,1.25rem)] py-[clamp(0.125rem,2cqmax,0.625rem)] text-[clamp(0.75rem,6cqmax,1.75rem)]'
+                    ? 'rounded-[1cqmax] px-[clamp(0.375rem,3cqmax,1rem)] py-[clamp(0.125rem,1.5cqmax,0.5rem)] text-[clamp(0.625rem,4.5cqmax,1.25rem)]'
                     : 'rounded-[1cqmin] px-[clamp(0.375rem,3cqmin,1.25rem)] py-[clamp(0.125rem,1.5cqmin,0.625rem)] text-[clamp(0.625rem,4.5cqmin,1.5rem)]'
                 }`}
               >
@@ -529,7 +529,7 @@ export function LifeCounter() {
             onClick={() => toggleAdvanced(player.id)}
             className={`bg-black/15 font-semibold text-black hover:bg-black/25 ${
               compactLandscape
-                ? 'rounded-[1cqmax] px-[clamp(0.5rem,5cqmax,1.5rem)] py-[clamp(0.125rem,2.5cqmax,0.75rem)] text-[clamp(0.75rem,6cqmax,1.5rem)]'
+                ? 'rounded-[1cqmax] px-[clamp(0.5rem,4cqmax,1.25rem)] py-[clamp(0.125rem,2cqmax,0.625rem)] text-[clamp(0.625rem,4.5cqmax,1.25rem)]'
                 : 'rounded-[1cqmin] px-[clamp(0.5rem,4cqmin,1.5rem)] py-[clamp(0.125rem,2cqmin,0.75rem)] text-[clamp(0.625rem,4.5cqmin,1.25rem)]'
             }`}
           >

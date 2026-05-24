@@ -92,7 +92,7 @@ export function Layout({ active, onTabChange, children }: Props) {
       </div>
 
       {playOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--color-mtg-bg)]/95 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[var(--color-mtg-bg)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           <div className="mx-auto max-w-7xl px-4 py-6">
             <div className="mb-4 flex justify-end">
               <button
@@ -109,7 +109,7 @@ export function Layout({ active, onTabChange, children }: Props) {
       )}
 
       {minigameOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--color-mtg-bg)]/95 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-[var(--color-mtg-bg)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           <div className="mx-auto max-w-7xl px-4 py-6">
             <div className="mb-4 flex justify-end">
               <button

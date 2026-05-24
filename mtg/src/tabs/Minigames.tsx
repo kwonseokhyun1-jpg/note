@@ -1,6 +1,11 @@
-import { useState } from 'react'
-import { ArtGuessGame } from '@mtgminigames/games/ArtGuessGame'
-import { UnscrambleGame } from '@mtgminigames/games/UnscrambleGame'
+import { Suspense, lazy, useState } from 'react'
+
+const ArtGuessGame = lazy(() =>
+  import('@mtgminigames/games/ArtGuessGame').then((m) => ({ default: m.ArtGuessGame })),
+)
+const UnscrambleGame = lazy(() =>
+  import('@mtgminigames/games/UnscrambleGame').then((m) => ({ default: m.UnscrambleGame })),
+)
 
 type MinigameId = 'menu' | 'art-guess' | 'unscramble'
 
@@ -17,6 +22,12 @@ const GAMES = [
   },
 ]
 
+function MinigameFallback() {
+  return (
+    <p className="py-12 text-center text-[var(--color-mtg-muted)]">Loading minigame…</p>
+  )
+}
+
 export function Minigames() {
   const [active, setActive] = useState<MinigameId>('menu')
 
@@ -30,7 +41,9 @@ export function Minigames() {
         >
           ← Back to minigames
         </button>
-        <ArtGuessGame />
+        <Suspense fallback={<MinigameFallback />}>
+          <ArtGuessGame />
+        </Suspense>
       </div>
     )
   }
@@ -45,7 +58,9 @@ export function Minigames() {
         >
           ← Back to minigames
         </button>
-        <UnscrambleGame />
+        <Suspense fallback={<MinigameFallback />}>
+          <UnscrambleGame />
+        </Suspense>
       </div>
     )
   }

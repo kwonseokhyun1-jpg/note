@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { suggestCardNames } from '../../../mtg/src/lib/card-name-resolve'
-import type { CardRecord } from '../../../mtg/src/types/card'
+import { suggestCardNames } from '@mtg/lib/card-name-resolve'
+import type { CardRecord } from '@mtg/types/card'
 import {
   CardHints,
   GuessForm,
@@ -78,13 +78,9 @@ export function UnscrambleGame() {
     [guess, showSuggestions],
   )
 
-  const guessesLeft = round ? MAX_GUESSES - round.guesses.length : MAX_GUESSES
-  const hintCount = round?.phase === 'playing' ? round.guesses.length : 0
-  const image = round ? getCardImage(round.card) : undefined
-
   const startNextRound = useCallback(() => {
     if (pool.length === 0) return
-    setRound((prev) => newRound(pool, prev?.card))
+    setRound((prev: RoundState | null) => newRound(pool, prev?.card))
     setGuess('')
     setShowSuggestions(false)
     inputRef.current?.focus()
@@ -99,7 +95,7 @@ export function UnscrambleGame() {
       setGuess('')
 
       if (isCorrectGuess(trimmed, round.card)) {
-        setStreak((s) => s + 1)
+        setStreak((s: number) => s + 1)
         setRound({ ...round, guesses: [...round.guesses, trimmed], phase: 'won' })
         return
       }
@@ -118,9 +114,17 @@ export function UnscrambleGame() {
 
   if (loading) return <MinigameLoading />
 
-  if (loadError || !round) {
-    return <MinigameError message={loadError ?? 'No cards available.'} />
+  if (loadError) return <MinigameError message={loadError} />
+
+  if (pool.length === 0) {
+    return <MinigameError message="No cards available." />
   }
+
+  if (!round) return <MinigameLoading />
+
+  const guessesLeft = MAX_GUESSES - round.guesses.length
+  const hintCount = round.phase === 'playing' ? round.guesses.length : 0
+  const image = getCardImage(round.card)
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">

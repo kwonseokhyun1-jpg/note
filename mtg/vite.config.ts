@@ -74,6 +74,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
+        '@mtg': path.resolve(__dirname, './src'),
         '@mtgminigames': path.resolve(__dirname, '../mtgminigames/src'),
       },
     },

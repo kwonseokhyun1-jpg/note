@@ -22,8 +22,12 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
+      "@mtg/*": ["./src/*"],
       "@mtgminigames": ["../mtgminigames/src"],
-      "@mtgminigames/*": ["../mtgminigames/src/*"]
+      "@mtgminigames/*": ["../mtgminigames/src/*"],
+      "react": ["./node_modules/@types/react/index.d.ts"],
+      "react-dom": ["./node_modules/@types/react-dom/index.d.ts"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime.d.ts"]
     }
   },
   "include": ["src", "../mtgminigames/src"]
