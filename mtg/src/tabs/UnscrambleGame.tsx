@@ -169,7 +169,7 @@ export function UnscrambleGame() {
       <GuessHistory guesses={round.guesses} won={round.phase === 'won'} />
 
       {round.phase === 'won' && (
-        <WinBanner cardName={round.card.name} onNext={startNextRound} />
+        <WinBanner cardName={round.card.name} image={image} onNext={startNextRound} />
       )}
 
       {round.phase === 'lost' && (

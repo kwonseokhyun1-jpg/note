@@ -2,9 +2,9 @@
 
 ## GitHub Pages
 
-Live site: **https://kwonseokhyun1-jpg.github.io/commanderhelp/**
+Live site: **https://kwonseokhyun1-jpg.github.io/commanderhelper/**
 
-1. [Settings → Pages](https://github.com/kwonseokhyun1-jpg/commanderhelp/settings/pages) → **Source: GitHub Actions**
+1. [Settings → Pages](https://github.com/kwonseokhyun1-jpg/commanderhelper/settings/pages) → **Source: GitHub Actions**
 2. Push to `main` or run **Deploy to GitHub Pages** in Actions
 
 ## Vercel (edhhelp)
@@ -17,10 +17,10 @@ Project: [edhhelp → Build and Deployment](https://vercel.com/kwonseokhyun1-jpg
 
 | Field | Value |
 |-------|-------|
-| Repository | `kwonseokhyun1-jpg/note` |
+| Repository | `kwonseokhyun1-jpg/commanderhelper` |
 | Production Branch | `main` |
 
-If this points at a different repo, pushes to `note` will never update edhhelp.
+If this points at a different repo, pushes to `commanderhelper` will never update edhhelp.
 
 ### 2. Build and Deployment
 

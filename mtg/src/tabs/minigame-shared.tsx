@@ -296,15 +296,22 @@ export function GuessHistory({
 
 export function WinBanner({
   cardName,
+  image,
   onNext,
 }: {
   cardName: string
+  image?: string
   onNext: () => void
 }) {
   return (
     <div className="rounded-lg border border-green-500/40 bg-green-500/10 p-4 text-center">
       <p className="text-lg font-semibold text-green-300">Correct!</p>
       <p className="mt-1 text-white">{cardName}</p>
+      {image && (
+        <div className="mx-auto mt-4 aspect-[5/7] w-48 overflow-hidden rounded-lg border border-[var(--color-mtg-border)]">
+          <img src={image} alt={cardName} className="h-full w-full object-cover" />
+        </div>
+      )}
       <button
         type="button"
         onClick={onNext}

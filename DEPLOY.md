@@ -1,10 +1,10 @@
 # Deploy (GitHub Pages)
 
-Live site: **https://kwonseokhyun1-jpg.github.io/edhassist/**
+Live site: **https://kwonseokhyun1-jpg.github.io/commanderhelper/**
 
 ## Pages setup
 
-1. [Settings → Pages](https://github.com/kwonseokhyun1-jpg/edhassist/settings/pages)
+1. [Settings → Pages](https://github.com/kwonseokhyun1-jpg/commanderhelper/settings/pages)
 2. **Source** must be **GitHub Actions**
 
 ## Deploy
