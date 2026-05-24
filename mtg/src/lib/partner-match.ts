@@ -32,8 +32,17 @@ function slugifyPartnerVariant(name: string): string {
 }
 
 function getPartnerVariant(text: string): string | undefined {
-  const match = text.match(/Partner[—–-]([^(]+?)\s*\(/i)
+  // Use \u escapes — literal em/en dashes can be stripped by minifiers.
+  const match = text.match(/Partner\s*[\u2014\u2013-]\s*([^(]+?)\s*\(/i)
   return match ? slugifyPartnerVariant(match[1]) : undefined
+}
+
+function hasGenericPartner(text: string): boolean {
+  return /\bPartner\s*\(\s*You can have two commanders if both have partner/i.test(text)
+}
+
+function hasPartnerVariantLine(text: string): boolean {
+  return /Partner\s*[\u2014\u2013-]/i.test(text)
 }
 
 export function getPartnerInfo(commander: CommanderRecord): PartnerInfo {
@@ -52,10 +61,10 @@ export function getPartnerInfo(commander: CommanderRecord): PartnerInfo {
     if (variant) {
       kinds.push('partner-variant')
       if (variant === 'friends-forever') kinds.push('friends-forever')
-    } else if (
-      keywords.includes('partner') ||
-      /\bPartner \(You can have two commanders if both have partner/i.test(text)
-    ) {
+    } else if (hasPartnerVariantLine(text)) {
+      kinds.push('partner-variant')
+      variant = 'unknown'
+    } else if (hasGenericPartner(text)) {
       kinds.push('partner')
     }
   }
@@ -173,6 +182,8 @@ function pushPair(
   matchedTags: string[],
   reasons: string[],
 ): void {
+  if (!canCommandersPair(primary, partner)) return
+
   const key = [primary.id, partner.id].sort().join('|')
   if (seen.has(key)) return
   seen.add(key)
