@@ -1,58 +1,49 @@
 const TCGPLAYER_ORIGIN = 'https://infinite-api.tcgplayer.com'
 
-type VercelRequest = {
-  method?: string
-  query: Record<string, string | string[] | undefined>
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  'Access-Control-Allow-Headers': 'Accept',
 }
 
-type VercelResponse = {
-  status: (code: number) => VercelResponse
-  json: (body: unknown) => void
-  send: (body: string) => void
-  setHeader: (name: string, value: string) => void
-}
-
-function buildUpstreamUrl(req: VercelRequest): string | null {
-  const rawPath = req.query.path
-  const path = Array.isArray(rawPath) ? rawPath.join('/') : rawPath?.trim()
+function buildUpstreamUrl(request: Request): string | null {
+  const url = new URL(request.url)
+  const path = url.searchParams.get('path')?.trim()
   if (!path) return null
 
   const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(req.query)) {
-    if (key === 'path' || value == null) continue
-    if (Array.isArray(value)) {
-      for (const entry of value) params.append(key, entry)
-    } else {
-      params.set(key, value)
-    }
+  for (const [key, value] of url.searchParams.entries()) {
+    if (key === 'path') continue
+    params.append(key, value)
   }
 
   const qs = params.toString()
   return `${TCGPLAYER_ORIGIN}/${path}${qs ? `?${qs}` : ''}`
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Accept')
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).send('')
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS })
   }
 
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.setHeader('Allow', 'GET, HEAD')
-    return res.status(405).json({ error: { message: 'Method not allowed' } })
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return Response.json(
+      { error: { message: 'Method not allowed' } },
+      { status: 405, headers: { ...CORS, Allow: 'GET, HEAD' } },
+    )
   }
 
-  const upstreamUrl = buildUpstreamUrl(req)
+  const upstreamUrl = buildUpstreamUrl(request)
   if (!upstreamUrl) {
-    return res.status(400).json({ error: { message: 'Missing TCGPlayer API path.' } })
+    return Response.json(
+      { error: { message: 'Missing TCGPlayer API path.' } },
+      { status: 400, headers: CORS },
+    )
   }
 
   try {
     const upstream = await fetch(upstreamUrl, {
-      method: req.method,
+      method: request.method,
       headers: {
         Accept: 'application/json',
         Origin: 'https://www.tcgplayer.com',
@@ -62,11 +53,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     })
 
-    const body = await upstream.text()
-    const contentType = upstream.headers.get('content-type')
-    if (contentType) res.setHeader('Content-Type', contentType)
-    res.status(upstream.status).send(body)
+    return new Response(await upstream.text(), {
+      status: upstream.status,
+      headers: {
+        ...CORS,
+        'Content-Type': upstream.headers.get('content-type') ?? 'application/json',
+      },
+    })
   } catch {
-    res.status(502).json({ error: { message: 'Could not reach TCGPlayer API.' } })
+    return Response.json(
+      { error: { message: 'Could not reach TCGPlayer API.' } },
+      { status: 502, headers: CORS },
+    )
   }
 }

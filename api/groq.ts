@@ -1,46 +1,32 @@
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
-type VercelRequest = {
-  method?: string
-  body?: unknown
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-type VercelResponse = {
-  status: (code: number) => VercelResponse
-  json: (body: unknown) => void
-  send: (body: string) => void
-  setHeader: (name: string, value: string) => void
-}
-
-function setCors(res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  setCors(res)
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).send('')
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS })
   }
 
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ error: { message: 'Method not allowed' } })
+  if (request.method !== 'POST') {
+    return Response.json(
+      { error: { message: 'Method not allowed' } },
+      { status: 405, headers: { ...CORS, Allow: 'POST' } },
+    )
   }
 
   const key = process.env.GROQ_API_KEY?.trim()
   if (!key) {
-    return res.status(503).json({
-      error: { message: 'GROQ_API_KEY is not configured on this deployment.' },
-    })
+    return Response.json(
+      { error: { message: 'GROQ_API_KEY is not configured on this deployment.' } },
+      { status: 503, headers: CORS },
+    )
   }
 
-  const body =
-    typeof req.body === 'string'
-      ? req.body
-      : JSON.stringify(req.body ?? {})
+  const body = await request.text()
 
   try {
     const upstream = await fetch(GROQ_URL, {
@@ -52,9 +38,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body,
     })
 
-    const text = await upstream.text()
-    res.status(upstream.status).send(text)
+    return new Response(await upstream.text(), {
+      status: upstream.status,
+      headers: {
+        ...CORS,
+        'Content-Type': upstream.headers.get('content-type') ?? 'application/json',
+      },
+    })
   } catch {
-    res.status(502).json({ error: { message: 'Could not reach Groq API.' } })
+    return Response.json(
+      { error: { message: 'Could not reach Groq API.' } },
+      { status: 502, headers: CORS },
+    )
   }
 }

@@ -5,13 +5,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/groq.ts": {
-      "runtime": "@vercel/node@3.2.29",
+    "api/**/*.ts": {
       "maxDuration": 30
-    },
-    "api/tcgplayer.ts": {
-      "runtime": "@vercel/node@3.2.29",
-      "maxDuration": 15
     }
   },
   "rewrites": [
