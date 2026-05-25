@@ -1,3 +1,5 @@
+export const config = { runtime: 'edge' }
+
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 const CORS = {

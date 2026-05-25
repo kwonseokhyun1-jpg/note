@@ -5,8 +5,11 @@
   "buildCommand": "npm run build --prefix mtg",
   "outputDirectory": "mtg/dist",
   "functions": {
-    "api/**/*.ts": {
+    "api/groq.ts": {
       "maxDuration": 30
+    },
+    "api/tcgplayer.ts": {
+      "maxDuration": 15
     }
   },
   "rewrites": [
