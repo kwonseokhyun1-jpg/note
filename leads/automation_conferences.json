@@ -1,0 +1,104 @@
+{
+  "conferences": [
+    {
+      "id": "zapconnect-2025",
+      "name": "ZapConnect 2025",
+      "date": "2025-09-25",
+      "location": "Virtual",
+      "focus": "AI workflow automation (Zapier)",
+      "hashtags": ["#ZapConnect", "#ZapConnect2025"],
+      "speaker_url": "https://zapier.com/zapconnect/speakers",
+      "attendee_estimate": 800000
+    },
+    {
+      "id": "make-waves-25",
+      "name": "Make Waves '25",
+      "date": "2025-10-16",
+      "location": "Munich, Germany",
+      "focus": "Make.com automation & AI agents",
+      "hashtags": ["#MakeWaves25", "#makewaves25"],
+      "speaker_url": "https://www.make.com/en/waves",
+      "attendee_estimate": 732
+    },
+    {
+      "id": "boomi-world-2026",
+      "name": "Boomi World 2026",
+      "date": "2026-05-11",
+      "location": "Chicago, IL",
+      "focus": "iPaaS, agentic AI, enterprise integration",
+      "hashtags": ["#BoomiWorld", "#BoomiWorld2026"],
+      "speaker_url": "https://boomi.com/boomi-world/",
+      "attendee_estimate": 3000
+    },
+    {
+      "id": "imagine-2026",
+      "name": "Automation Anywhere Imagine 2026",
+      "date": "2026-05-19",
+      "location": "Dallas, TX & Bengaluru, India",
+      "focus": "Agentic process automation",
+      "hashtags": ["#AAImagine", "#Imagine2026", "#Imagine2026"],
+      "speaker_url": "https://www.automationanywhere.com/imagine",
+      "attendee_estimate": 2500
+    },
+    {
+      "id": "camundacon-2026",
+      "name": "CamundaCon 2026",
+      "date": "2026-05-19",
+      "location": "Amsterdam, Netherlands",
+      "focus": "Process orchestration & agentic workflows",
+      "hashtags": ["#CamundaCon", "#AgenticOrchestration"],
+      "speaker_url": "https://camunda.com/events/camundacon/",
+      "attendee_estimate": 1200
+    },
+    {
+      "id": "zendesk-relate-2026",
+      "name": "Zendesk Relate 2026",
+      "date": "2026-05-18",
+      "location": "Denver, CO",
+      "focus": "Autonomous service & workflow automation",
+      "hashtags": ["#ZendeskRelate", "#ZendeskRelate2026"],
+      "speaker_url": "https://relate.zendesk.com/",
+      "attendee_estimate": 5000
+    },
+    {
+      "id": "agentcon-berlin-2026",
+      "name": "AgentCon Berlin 2026",
+      "date": "2026-05-19",
+      "location": "Berlin, Germany",
+      "focus": "AI agents & agentic workflows",
+      "hashtags": ["#AgentCon", "#AIAgents"],
+      "speaker_url": "https://agentcon.de/",
+      "attendee_estimate": 500
+    },
+    {
+      "id": "n8n-fest-2026",
+      "name": "n8n Fest 2026",
+      "date": "2026-07-16",
+      "location": "Berlin, Germany",
+      "focus": "n8n workflow automation community",
+      "hashtags": ["#n8nFest", "#n8n"],
+      "speaker_url": "https://lu.ma/n8nfest",
+      "attendee_estimate": 500
+    },
+    {
+      "id": "automate-2026",
+      "name": "Automate 2026",
+      "date": "2026-06-22",
+      "location": "Chicago, IL",
+      "focus": "Industrial automation & robotics",
+      "hashtags": ["#Automate2026", "#AutomateShow"],
+      "speaker_url": "https://www.automateshow.com/",
+      "attendee_estimate": 30000
+    },
+    {
+      "id": "uipath-fusion-2026",
+      "name": "UiPath FUSION 2026",
+      "date": "2026-09-22",
+      "location": "Las Vegas, NV",
+      "focus": "Enterprise RPA & agentic automation",
+      "hashtags": ["#UiPathFusion", "#FUSION2026"],
+      "speaker_url": "https://www.uipath.com/events/fusion",
+      "attendee_estimate": 4000
+    }
+  ]
+}

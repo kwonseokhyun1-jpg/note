@@ -57,3 +57,34 @@ python3 leads/apollo_enrich_leads.py \
 ```
 
 `bulk_match` uses Apollo credits for verified emails.
+
+## n8n / Zapier customer leads
+
+Companies sourced from [n8n case studies](https://n8n.io/case-studies/) and [Zapier customer stories](https://zapier.com/customer-stories).
+
+```bash
+export APOLLO_API_KEY='your-master-key'
+python3 leads/apollo_n8n_zapier_leads.py --limit 100 --output leads/n8n-zapier-vp-leads.csv
+```
+
+Add `--include-global` to widen beyond US contacts when US results are thin.
+
+## Automation conference leads
+
+Find people who recently attended workflow/automation conferences (LinkedIn posts + speaker lists), enriched via Apollo.
+
+**10 conferences tracked:** ZapConnect 2025, Make Waves '25, Boomi World 2026, Imagine 2026, CamundaCon 2026, Zendesk Relate 2026, AgentCon Berlin 2026, n8n Fest 2026, Automate 2026, UiPath FUSION 2026.
+
+```bash
+export APOLLO_API_KEY='your-master-key'
+python3 leads/apollo_conference_leads.py --limit 100
+```
+
+Optional: `--max-per-conference 20` to cap any single conference for diversity.
+
+Outputs:
+- `leads/automation-conference-leads.csv` — main export
+- `leads/google-sheet-conference-import.csv` — Google Sheets format
+- `leads/automation-conference-summary.md` — conference breakdown
+
+Seed data: `leads/automation_conferences.json`, `leads/automation_conference_attendees.json`
