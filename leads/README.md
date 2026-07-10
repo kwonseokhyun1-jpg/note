@@ -57,3 +57,14 @@ python3 leads/apollo_enrich_leads.py \
 ```
 
 `bulk_match` uses Apollo credits for verified emails.
+
+## n8n / Zapier customer leads
+
+Companies sourced from [n8n case studies](https://n8n.io/case-studies/) and [Zapier customer stories](https://zapier.com/customer-stories).
+
+```bash
+export APOLLO_API_KEY='your-master-key'
+python3 leads/apollo_n8n_zapier_leads.py --limit 100 --output leads/n8n-zapier-vp-leads.csv
+```
+
+Add `--include-global` to widen beyond US contacts when US results are thin.
