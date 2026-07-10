@@ -31,3 +31,7 @@ leads/apollo-enriched-leads.csv
 leads/apollo-api-search-leads.csv
 leads/google-sheet-import.csv
 leads/n8n-zapier-vp-leads.csv
+leads/google-sheet-n8n-zapier-import.csv
+leads/automation-conference-leads.csv
+leads/google-sheet-conference-import.csv
+leads/automation-conference-summary.md
