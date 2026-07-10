@@ -25,3 +25,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Lead exports with contact PII (regenerate locally with Apollo API key)
+leads/apollo-enriched-leads.csv
+leads/apollo-api-search-leads.csv
+leads/google-sheet-import.csv
