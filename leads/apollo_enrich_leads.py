@@ -133,6 +133,16 @@ def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
     return data.get("person")
 
 
+def parse_apollo_id(notes: str) -> tuple[str, str]:
+    """Split Apollo id prefix from freeform notes."""
+    notes = (notes or "").strip()
+    prefix = "Apollo id:"
+    if notes.startswith(prefix):
+        apollo_id, _, rest = notes[len(prefix) :].partition("|")
+        return apollo_id.strip(), rest.strip()
+    return "", notes
+
+
 def person_to_row(category: str, match: dict[str, Any], source: str) -> dict[str, Any]:
     return {
         "Category": category,
@@ -148,12 +158,25 @@ def person_to_row(category: str, match: dict[str, Any], source: str) -> dict[str
         "LinkedIn URL": match.get("linkedin_url", ""),
         "Email": match.get("email", ""),
         "Email Source": source,
-        "Notes": f"Apollo id: {match.get('id', '')}",
+        "Apollo ID": match.get("id", ""),
+        "Notes": "",
     }
 
 
 def write_google_sheet_csv(path: str, rows: list[dict[str, Any]]) -> None:
-    fieldnames = ["Name", "Company", "Account", "Role", "Department", "Phone", "Notes"]
+    fieldnames = [
+        "Name",
+        "Company",
+        "Account",
+        "Role",
+        "Department",
+        "Phone",
+        "Email",
+        "LinkedIn",
+        "Location",
+        "Apollo ID",
+        "Notes",
+    ]
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -163,15 +186,11 @@ def write_google_sheet_csv(path: str, rows: list[dict[str, Any]]) -> None:
                 for part in [row.get("First Name", ""), row.get("Last Name", "")]
                 if part
             ).strip()
-            notes_parts = []
-            if row.get("Email"):
-                notes_parts.append(f"Email: {row['Email']}")
-            if row.get("LinkedIn URL"):
-                notes_parts.append(f"LinkedIn: {row['LinkedIn URL']}")
-            if row.get("Location"):
-                notes_parts.append(f"Location: {row['Location']}")
-            if row.get("Notes"):
-                notes_parts.append(str(row["Notes"]))
+            apollo_id = (row.get("Apollo ID") or "").strip()
+            notes = (row.get("Notes") or "").strip()
+            if not apollo_id:
+                apollo_id, parsed_notes = parse_apollo_id(notes)
+                notes = parsed_notes or notes
             writer.writerow(
                 {
                     "Name": name,
@@ -180,7 +199,11 @@ def write_google_sheet_csv(path: str, rows: list[dict[str, Any]]) -> None:
                     "Role": row.get("Title", ""),
                     "Department": row.get("Category", ""),
                     "Phone": row.get("Phone", ""),
-                    "Notes": " | ".join(notes_parts),
+                    "Email": row.get("Email", ""),
+                    "LinkedIn": row.get("LinkedIn URL", ""),
+                    "Location": row.get("Location", ""),
+                    "Apollo ID": apollo_id,
+                    "Notes": notes,
                 }
             )
 
@@ -233,9 +256,21 @@ def enrich_csv_input(api_key: str, input_path: str) -> list[dict[str, Any]]:
             linkedin = (row.get("LinkedIn URL") or "").strip()
             if linkedin and not (row.get("Email") or "").strip():
                 person = match_by_linkedin(api_key, linkedin)
-                if person and person.get("email"):
-                    row["Email"] = person["email"]
-                    row["Email Source"] = "Apollo people/match"
+                if person:
+                    if person.get("email"):
+                        row["Email"] = person["email"]
+                        row["Email Source"] = "Apollo people/match"
+                    if person.get("id"):
+                        row["Apollo ID"] = person["id"]
+                    if person.get("linkedin_url"):
+                        row["LinkedIn URL"] = person["linkedin_url"]
+                    location = ", ".join(
+                        x
+                        for x in [person.get("city"), person.get("state"), person.get("country")]
+                        if x
+                    )
+                    if location:
+                        row["Location"] = location
             rows.append(row)
             time.sleep(0.3)
     return rows
@@ -252,6 +287,7 @@ def write_csv(path: str, rows: list[dict[str, Any]]) -> None:
         "LinkedIn URL",
         "Email",
         "Email Source",
+        "Apollo ID",
         "Notes",
     ]
     with open(path, "w", newline="", encoding="utf-8") as f:

@@ -25,6 +25,8 @@ pip install gspread google-auth
 python3 leads/populate_google_sheet.py
 ```
 
+Sheet columns: `Name`, `Company`, `Role`, `Department`, `Email`, `LinkedIn`, `Location`, `Apollo ID`, `Notes`.
+
 ### Manual import
 
 1. Open `leads/google-sheet-import.csv` in Cursor and download it
