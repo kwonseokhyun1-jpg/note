@@ -106,15 +106,21 @@ def search_people(
 
 
 def bulk_match(api_key: str, person_ids: list[str]) -> dict[str, Any]:
-    payload = {
-        "details": [{"id": pid} for pid in person_ids],
-        "reveal_personal_emails": False,
-        "reveal_phone_number": False,
-    }
-    url = f"{API_BASE}/people/bulk_match"
-    resp = requests.post(url, headers=api_headers(api_key), json=payload, timeout=60)
-    resp.raise_for_status()
-    return resp.json()
+    all_matches: list[dict[str, Any]] = []
+    for i in range(0, len(person_ids), 10):
+        chunk = person_ids[i : i + 10]
+        payload = {
+            "details": [{"id": pid} for pid in chunk],
+            "reveal_personal_emails": False,
+            "reveal_phone_number": False,
+        }
+        url = f"{API_BASE}/people/bulk_match"
+        resp = requests.post(url, headers=api_headers(api_key), json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        all_matches.extend(data.get("matches") or [])
+        time.sleep(0.3)
+    return {"matches": all_matches}
 
 
 def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
@@ -125,6 +131,58 @@ def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
     resp.raise_for_status()
     data = resp.json()
     return data.get("person")
+
+
+def person_to_row(category: str, match: dict[str, Any], source: str) -> dict[str, Any]:
+    return {
+        "Category": category,
+        "First Name": match.get("first_name", ""),
+        "Last Name": match.get("last_name", ""),
+        "Title": match.get("title", ""),
+        "Company": (match.get("organization") or {}).get("name", ""),
+        "Location": ", ".join(
+            x
+            for x in [match.get("city"), match.get("state"), match.get("country")]
+            if x
+        ),
+        "LinkedIn URL": match.get("linkedin_url", ""),
+        "Email": match.get("email", ""),
+        "Email Source": source,
+        "Notes": f"Apollo id: {match.get('id', '')}",
+    }
+
+
+def write_google_sheet_csv(path: str, rows: list[dict[str, Any]]) -> None:
+    fieldnames = ["Name", "Company", "Account", "Role", "Department", "Phone", "Notes"]
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            name = " ".join(
+                part
+                for part in [row.get("First Name", ""), row.get("Last Name", "")]
+                if part
+            ).strip()
+            notes_parts = []
+            if row.get("Email"):
+                notes_parts.append(f"Email: {row['Email']}")
+            if row.get("LinkedIn URL"):
+                notes_parts.append(f"LinkedIn: {row['LinkedIn URL']}")
+            if row.get("Location"):
+                notes_parts.append(f"Location: {row['Location']}")
+            if row.get("Notes"):
+                notes_parts.append(str(row["Notes"]))
+            writer.writerow(
+                {
+                    "Name": name,
+                    "Company": row.get("Company", ""),
+                    "Account": "",
+                    "Role": row.get("Title", ""),
+                    "Department": row.get("Category", ""),
+                    "Phone": row.get("Phone", ""),
+                    "Notes": " | ".join(notes_parts),
+                }
+            )
 
 
 def collect_search_results(api_key: str, max_per_group: int = 50) -> list[dict[str, Any]]:
@@ -154,28 +212,7 @@ def collect_search_results(api_key: str, max_per_group: int = 50) -> list[dict[s
                 for match in matches:
                     if not match:
                         continue
-                    rows.append(
-                        {
-                            "Category": category,
-                            "First Name": match.get("first_name", ""),
-                            "Last Name": match.get("last_name", ""),
-                            "Title": match.get("title", ""),
-                            "Company": (match.get("organization") or {}).get("name", ""),
-                            "Location": ", ".join(
-                                x
-                                for x in [
-                                    match.get("city"),
-                                    match.get("state"),
-                                    match.get("country"),
-                                ]
-                                if x
-                            ),
-                            "LinkedIn URL": match.get("linkedin_url", ""),
-                            "Email": match.get("email", ""),
-                            "Email Source": "Apollo bulk_match",
-                            "Notes": f"Apollo id: {match.get('id', '')}",
-                        }
-                    )
+                    rows.append(person_to_row(category, match, "Apollo bulk_match"))
                     collected += 1
                     if collected >= max_per_group:
                         break
@@ -228,6 +265,10 @@ def main() -> None:
     parser.add_argument("--output", default="leads/apollo-enriched-leads.csv")
     parser.add_argument("--input", help="Enrich existing CSV via LinkedIn URLs")
     parser.add_argument("--max-per-group", type=int, default=50)
+    parser.add_argument(
+        "--google-sheet-output",
+        help="Also write CSV formatted for Google Sheet columns",
+    )
     args = parser.parse_args()
 
     api_key = os.environ.get("APOLLO_API_KEY", "").strip()
@@ -242,6 +283,9 @@ def main() -> None:
 
     write_csv(args.output, rows)
     print(f"Wrote {len(rows)} rows to {args.output}")
+    if args.google_sheet_output:
+        write_google_sheet_csv(args.google_sheet_output, rows)
+        print(f"Wrote Google Sheet CSV to {args.google_sheet_output}")
 
 
 if __name__ == "__main__":

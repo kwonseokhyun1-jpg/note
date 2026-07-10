@@ -9,13 +9,15 @@
 
 ## Google Sheet
 
-Target sheet: https://docs.google.com/spreadsheets/d/1-tdoLKJuzffG7Do0fYXFUEqRxstcUtGH3_o0C70aJ_U/edit
+Target sheet: https://docs.google.com/spreadsheets/d/1MPK1t22VKc3Np47v7tK2tbN0xi0k0ygcQLF0LkUrPeA/edit
 
-The sheet is currently private (sign-in required). To populate it:
+Import generated leads:
 
-1. **Quick import:** File → Import → Upload `apollo-erp-sap-b2b-cims-us-leads.csv`
-2. **Share for agent access:** Sheet → Share → "Anyone with the link" → Editor
-3. **Apollo UI export:** Open your persona search and export CSV, then merge with this file
+1. Run enrichment (see below) to create `leads/google-sheet-import.csv`
+2. Open the sheet → **File → Import → Upload** → select `google-sheet-import.csv`
+3. Choose **Replace current sheet** (or Insert new rows)
+
+Sheet columns mapped: `Name`, `Company`, `Role`, `Department`, `Notes` (includes email + LinkedIn + location).
 
 Apollo persona filter (UI only):  
 https://app.apollo.io/#/people?qPersonPersonaIds[]=6a5083e1319cfc001052255d
@@ -26,6 +28,10 @@ https://app.apollo.io/#/people?qPersonPersonaIds[]=6a5083e1319cfc001052255d
 export APOLLO_API_KEY='your-master-key'
 pip install requests
 python3 leads/apollo_enrich_leads.py --output leads/apollo-enriched-leads.csv
+python3 leads/apollo_enrich_leads.py \
+  --input leads/apollo-erp-sap-b2b-cims-us-leads.csv \
+  --output leads/apollo-enriched-leads.csv \
+  --google-sheet-output leads/google-sheet-import.csv
 ```
 
 Enrich the existing seed list:
