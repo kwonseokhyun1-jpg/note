@@ -19,7 +19,17 @@
     "Koralplay",
     "pxtra",
     "BeGlobal",
-    "Oversee"
+    "Oversee",
+    "Deda.Tech",
+    "iMi digital",
+    "Flow AI",
+    "XIBIX Solutions",
+    "ITNT Media Group",
+    "Formula Bot",
+    "ChatHQ",
+    "TUP",
+    "Bordr",
+    "uProc"
   ],
   "zapier": [
     "Remote",
@@ -46,6 +56,40 @@
     "Erewhon",
     "Vector Media",
     "Bonjoro",
-    "SmartClick Systems"
+    "SmartClick Systems",
+    "Vendavo",
+    "Toyota of Orlando",
+    "Sheeo",
+    "ActiveCampaign"
+  ],
+  "named_case_study_contacts": [
+    {
+      "name": "Megan Tsang",
+      "company": "Superhuman",
+      "platform": "zapier",
+      "linkedin": "https://www.linkedin.com/in/megan-tsang-superhuman",
+      "note": "Marketing Operations Manager - Zapier case study"
+    },
+    {
+      "name": "Shaina Torgerson",
+      "company": "Superhuman",
+      "platform": "zapier",
+      "linkedin": "https://www.linkedin.com/in/shaina-torgerson",
+      "note": "Support Operations Lead - Zapier case study"
+    },
+    {
+      "name": "Matt Grebow",
+      "company": "ServiceTitan",
+      "platform": "zapier",
+      "linkedin": "https://www.linkedin.com/in/matt-grebow",
+      "note": "Sr Manager Demand Gen - quoted in Zapier case study"
+    },
+    {
+      "name": "Dennis Zahrt",
+      "company": "Delivery Hero",
+      "platform": "n8n",
+      "linkedin": "https://www.linkedin.com/in/dennis-zahrt",
+      "note": "IT service delivery lead - n8n case study"
+    }
   ]
 }
