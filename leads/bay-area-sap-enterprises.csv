@@ -1,0 +1,23 @@
+Company,Bay_Area_Office_City,Region,Employees_Approx,Revenue_Approx_USD,SAP_Footprint,SAP_Evidence_Tier,Evidence_Source,Notes
+Apple,Cupertino,South Bay,176000,391B,SAP S/4HANA (finance supply chain iTunes),Tier 1,Vendor install-base / executive interview,Fortune 500
+Cisco,San Jose,South Bay,84000,57B,SAP HANA (sales supply chain planning analytics),Tier 1,Cisco SAP HANA case study PDF,Fortune 500; extensive SAP HANA deployment
+Chevron,San Ramon,East Bay,45600,200B,SAP ERP,Tier 1,Fortune 500 SAP customer lists,Fortune 500; energy
+Clorox,Oakland,East Bay,8000,7B,SAP S/4HANA Cloud (US and Canada 21 plants),Tier 1,Digital Commerce 360 Feb 2026; SAPinsider,$580M rollout completed 2026
+PG&E,Oakland,East Bay,28400,24B,SAP S/4HANA (Propel program),Tier 1,Job postings / leads research,HQ 300 Lakeside Dr ~7000 onsite
+Levi Strauss & Co.,San Francisco,San Francisco,15000,6.5B,SAP S/4HANA Fashion RISE on Azure,Tier 1,levistrauss.com ERP modernization 2026,Global single-instance migration through 2027
+Gap Inc.,San Francisco,San Francisco,82000,15B,SAP ERP (finance supply chain retail),Tier 1,Industry install-base data,HQ 2 Folsom St SoMa
+Gilead Sciences,Foster City,Peninsula,18000,27B,SAP S/4HANA MDG Ariba enterprise program,Tier 1,Built In SF VP ERP job posting,Active S/4HANA transformation
+Genentech (Roche),South San Francisco,Peninsula,15000+,65B+ (Roche group),SAP S/4HANA ASPIRE global program,Tier 1,Roche ASPIRE SAP symposium PDF 2025,Waves running through 2027
+Amgen,South San Francisco,Peninsula,650 (SSF site),32B (global),SAP S/4HANA QM PP-PI manufacturing,Tier 1,Amgen SAP Architect job posting,Major R&D campus Oyster Point
+BioMarin Pharmaceutical,Novato,North Bay,3000+,2B,SAP S/4HANA enterprise-wide,Tier 1,BioMarin SAP job postings,Go-live 2025-2026
+Dolby Laboratories,San Francisco,San Francisco,2000+,1.3B,SAP ECC to SAP Cloud ERP Private (S/4),Tier 1,Job posting Implementation Director,Active migration program
+NVIDIA,Santa Clara,South Bay,36000,130B,SAP Business Network IBP; moving to S/4HANA,Tier 1,LaunchLeads SAP footprint tracker,Fortune 500
+Adobe,San Jose,South Bay,29000,21B,SAP Signavio Business Data Cloud SAP modules,Tier 1,LaunchLeads / vendor data,Heavy SAP ecosystem user
+Intel,Santa Clara,South Bay,120000,54B,SAP HANA (supply chain manufacturing finance),Tier 1,Intel supply chain SAP HANA PDF,Strategic SAP partner
+Simpson Strong-Tie,Pleasanton,East Bay,5000+,1.5B,SAP S/4HANA supply chain,Tier 1,SAPinsider case study,S/4 go-live 2018; ongoing optimization
+Central Garden & Pet,Walnut Creek,East Bay,6000,3.1B,SAP ERP / S/4HANA Finance,Tier 1,CareerBuilder SAP Finance job Walnut Creek,Consumer goods
+Wells Fargo,San Francisco,San Francisco,130000,84B,SAP S/4HANA Fiori ABAP SLT,Tier 1,LinkedIn / job board SAP roles,Fortune 500; SF HQ
+Visa,Foster City,Peninsula,28000,35B,SAP BTP SAP ERP integration,Tier 1,SAP Visa partnership 2025,SAP infrastructure partner
+Kaiser Permanente,Oakland,East Bay,73800,128B,SAP SuccessFactors integrations (core ERP Oracle PeopleSoft),Tier 2,AppsRunTheWorld / LinkedIn,Mixed stack; partial SAP footprint
+Charles Schwab,San Francisco (branches),San Francisco,33000,24B,SAP ECC / S/4HANA on AWS,Tier 2,LinkedIn SAP Basis roles,HQ moved to Westlake TX; Bay Area branches remain
+Airbnb,San Francisco,San Francisco,7000,11B,SAP (install-base listed),Tier 2,OceanFrogs SAP customer list,Weaker public ERP detail
