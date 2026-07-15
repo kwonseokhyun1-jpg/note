@@ -56,4 +56,13 @@ python3 leads/apollo_enrich_leads.py \
   --output leads/apollo-enriched-leads.csv
 ```
 
+Enrich Bay Area Oracle Fusion/NetSuite SMB leads (adds `Contact_Email`, `Contact_Email_Source`, `Apollo_ID`):
+
+```bash
+python3 leads/apollo_enrich_leads.py \
+  --format bay-area \
+  --input leads/bay-area-oracle-fusion-netsuite-leads.csv \
+  --output leads/bay-area-oracle-fusion-netsuite-leads.csv
+```
+
 `bulk_match` uses Apollo credits for verified emails.

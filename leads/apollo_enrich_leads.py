@@ -133,6 +133,84 @@ def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
     return data.get("person")
 
 
+def match_by_name_company(
+    api_key: str,
+    first_name: str,
+    last_name: str,
+    organization_name: str,
+) -> dict[str, Any] | None:
+    params = [
+        ("first_name", first_name),
+        ("last_name", last_name),
+        ("organization_name", organization_name),
+        ("reveal_personal_emails", "false"),
+    ]
+    query = "&".join(f"{k}={quote(v)}" for k, v in params if v)
+    url = f"{API_BASE}/people/match?{query}"
+    resp = requests.post(url, headers=api_headers(api_key), timeout=60)
+    if resp.status_code == 404:
+        return None
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("person")
+
+
+def apply_person_to_bay_area_row(row: dict[str, str], person: dict[str, Any], source: str) -> None:
+    email = (person.get("email") or "").strip()
+    if email and not (row.get("Contact_Email") or "").strip():
+        row["Contact_Email"] = email
+        row["Contact_Email_Source"] = source
+    apollo_id = (person.get("id") or "").strip()
+    if apollo_id:
+        row["Apollo_ID"] = apollo_id
+    linkedin = (person.get("linkedin_url") or "").strip()
+    if linkedin and not (row.get("Contact_LinkedIn") or "").strip():
+        row["Contact_LinkedIn"] = linkedin
+    title = (person.get("title") or "").strip()
+    if title and not (row.get("Contact_Title") or "").strip():
+        row["Contact_Title"] = title
+
+
+def enrich_bay_area_csv(api_key: str, input_path: str) -> tuple[list[dict[str, str]], list[str]]:
+    rows: list[dict[str, str]] = []
+    with open(input_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        fieldnames = list(reader.fieldnames or [])
+        for extra in ("Contact_Email_Source", "Apollo_ID"):
+            if extra not in fieldnames:
+                fieldnames.append(extra)
+        for row in reader:
+            row.setdefault("Contact_Email_Source", "")
+            row.setdefault("Apollo_ID", "")
+            linkedin = (row.get("Contact_LinkedIn") or "").strip()
+            person = None
+            source = ""
+            if linkedin:
+                person = match_by_linkedin(api_key, linkedin)
+                source = "Apollo people/match (LinkedIn)"
+                time.sleep(0.3)
+            if not person:
+                first = (row.get("Contact_First_Name") or "").strip()
+                last = (row.get("Contact_Last_Name") or "").strip()
+                company = (row.get("Company") or "").strip()
+                if first and last and company:
+                    person = match_by_name_company(api_key, first, last, company)
+                    source = "Apollo people/match (name+company)"
+                    time.sleep(0.3)
+            if person:
+                apply_person_to_bay_area_row(row, person, source)
+            rows.append(row)
+    rows_fieldnames = fieldnames
+    return rows, rows_fieldnames
+
+
+def write_bay_area_csv(path: str, rows: list[dict[str, str]], fieldnames: list[str]) -> None:
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def parse_apollo_id(notes: str) -> tuple[str, str]:
     """Split Apollo id prefix from freeform notes."""
     notes = (notes or "").strip()
@@ -305,6 +383,12 @@ def main() -> None:
         "--google-sheet-output",
         help="Also write CSV formatted for Google Sheet columns",
     )
+    parser.add_argument(
+        "--format",
+        choices=["default", "bay-area"],
+        default="default",
+        help="Input/output CSV schema (bay-area = Bay Area ERP leads columns)",
+    )
     args = parser.parse_args()
 
     api_key = os.environ.get("APOLLO_API_KEY", "").strip()
@@ -312,13 +396,22 @@ def main() -> None:
         print("Set APOLLO_API_KEY environment variable.", file=sys.stderr)
         sys.exit(1)
 
-    if args.input:
+    if args.format == "bay-area":
+        if not args.input:
+            print("--input is required with --format bay-area", file=sys.stderr)
+            sys.exit(1)
+        rows, fieldnames = enrich_bay_area_csv(api_key, args.input)
+        write_bay_area_csv(args.output, rows, fieldnames)
+        enriched = sum(1 for r in rows if (r.get("Contact_Email") or "").strip())
+        print(f"Wrote {len(rows)} rows to {args.output} ({enriched} with email)")
+    elif args.input:
         rows = enrich_csv_input(api_key, args.input)
+        write_csv(args.output, rows)
+        print(f"Wrote {len(rows)} rows to {args.output}")
     else:
         rows = collect_search_results(api_key, max_per_group=args.max_per_group)
-
-    write_csv(args.output, rows)
-    print(f"Wrote {len(rows)} rows to {args.output}")
+        write_csv(args.output, rows)
+        print(f"Wrote {len(rows)} rows to {args.output}")
     if args.google_sheet_output:
         write_google_sheet_csv(args.google_sheet_output, rows)
         print(f"Wrote Google Sheet CSV to {args.google_sheet_output}")
