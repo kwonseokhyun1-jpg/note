@@ -5,6 +5,7 @@
 | File | Description |
 |------|-------------|
 | `apollo-erp-sap-b2b-cims-us-leads.csv` | 39 US-first prospects with LinkedIn URLs (public research) |
+| `ai-agent-eo-insurance-providers.csv` | AI / agent insurance providers, brokers, and certified insured AI vendors |
 | `apollo_enrich_leads.py` | Apollo API script to pull + enrich emails when `APOLLO_API_KEY` is set |
 | `populate_google_sheet.py` | Writes CSV to Google Sheets via service account |
 
