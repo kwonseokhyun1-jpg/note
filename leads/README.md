@@ -5,7 +5,10 @@
 | File | Description |
 |------|-------------|
 | `apollo-erp-sap-b2b-cims-us-leads.csv` | 39 US-first prospects with LinkedIn URLs (public research) |
+| `bay-area-epic-hospitals.csv` | Bay Area hospitals on Epic with addresses and public IT desk contacts |
+| `bay-area-epic-hospital-it-contacts.csv` | Apollo-enriched IT/Epic contacts at Bay Area health systems |
 | `apollo_enrich_leads.py` | Apollo API script to pull + enrich emails when `APOLLO_API_KEY` is set |
+| `apollo_enrich_epic_hospitals.py` | Apollo enrichment for Bay Area Epic hospital IT contacts |
 | `populate_google_sheet.py` | Writes CSV to Google Sheets via service account |
 
 ## Google Sheet
@@ -55,5 +58,14 @@ python3 leads/apollo_enrich_leads.py \
   --input leads/apollo-erp-sap-b2b-cims-us-leads.csv \
   --output leads/apollo-enriched-leads.csv
 ```
+
+### Bay Area Epic hospital IT contacts
+
+```bash
+export APOLLO_API_KEY='your-master-key'
+python3 leads/apollo_enrich_epic_hospitals.py
+```
+
+Reads `leads/bay-area-epic-hospitals.csv` and writes `leads/bay-area-epic-hospital-it-contacts.csv`.
 
 `bulk_match` uses Apollo credits for verified emails.
