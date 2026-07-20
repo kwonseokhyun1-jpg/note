@@ -1,0 +1,23 @@
+Hospital,Health_System,Epic_Product,Address,City,State,Zip,Public_IT_Phone,Public_IT_Email,Notes
+UCSF Helen Diller Hospital,UCSF Health,APeX (Epic),505 Parnassus Ave,San Francisco,CA,94143,415-514-4100,itservicedesk@ucsf.edu,Main inpatient campus Parnassus
+UCSF Mission Bay Campus,UCSF Health,APeX (Epic),1825 4th St,San Francisco,CA,94158,415-514-4100,itservicedesk@ucsf.edu,Includes Benioff Children's women's and cancer hospitals
+UCSF Benioff Children's Hospital SF,UCSF Health,APeX (Epic),1975 4th St,San Francisco,CA,94158,415-514-4100,itservicedesk@ucsf.edu,Pediatric hospital Mission Bay
+UCSF Health Hyde Hospital,UCSF Health,APeX (Epic),900 Hyde St,San Francisco,CA,94109,415-514-4100,APeXTraining@ucsf.edu,Former Saint Francis Memorial; APeX go-live Oct 2025
+UCSF Health Stanyan Hospital,UCSF Health,APeX (Epic),450 Stanyan St,San Francisco,CA,94117,415-514-4100,APeXTraining@ucsf.edu,Former St Mary's Medical Center
+Zuckerberg SF General,Zuckerberg SF General / SF Health Network,Epic,1001 Potrero Ave,San Francisco,CA,94110,628-206-7378,dph.onboarding@sfdph.org,Public safety-net hospital; Epic via SFDPH
+Laguna Honda Hospital,SF Health Network,Epic,375 Laguna Honda Blvd,San Francisco,CA,94116,628-206-7378,dph.onboarding@sfdph.org,Long-term care and rehab
+Kaiser San Francisco Medical Center,Kaiser Permanente NorCal,Epic (HealthConnect),2425 Geary Blvd,San Francisco,CA,94115,888-457-4872,,No public Epic IT email
+CPMC Van Ness Campus,Sutter Health / CPMC,Epic,1101 Van Ness Ave,San Francisco,CA,94109,888-888-6044,sccsales@sutterhealth.org,Epic Community Connect sales email
+CPMC Davies Campus,Sutter Health / CPMC,Epic,601 Duboce Ave,San Francisco,CA,94117,888-888-6044,sccsales@sutterhealth.org,
+CPMC Mission Bernal Campus,Sutter Health / CPMC,Epic,3555 Cesar Chavez St,San Francisco,CA,94110,888-888-6044,sccsales@sutterhealth.org,
+Stanford Hospital,Stanford Health Care,Epic,500 Pasteur Dr,Palo Alto,CA,94304,650-723-3333,Access-Control@stanfordhealthcare.org,
+Lucile Packard Children's Hospital,Stanford Children's Health,Epic,725 Welch Rd,Palo Alto,CA,94304,650-498-7500,DS.LPCH.Service.Desk@nttdata.com,
+El Camino Hospital Mountain View,El Camino Health,iCare (Epic),2500 Grant Rd,Mountain View,CA,94040,650-988-7999,helpdesk@elcaminohealth.org,
+El Camino Hospital Los Gatos,El Camino Health,iCare (Epic),815 Pollard Rd,Los Gatos,CA,95032,650-988-7999,helpdesk@elcaminohealth.org,
+Mills-Peninsula Medical Center,Sutter Health,Epic,1501 Trousdale Dr,Burlingame,CA,94010,888-888-6044,sccsales@sutterhealth.org,First Sutter hospital on Epic
+Kaiser South San Francisco Medical Center,Kaiser Permanente NorCal,Epic (HealthConnect),1200 El Camino Real,South San Francisco,CA,94080,888-457-4872,,
+Highland Hospital,Alameda Health System,Epic,1411 E 31st St,Oakland,CA,94602,510-437-4503,,IT help desk phone only
+Kaiser Oakland Medical Center,Kaiser Permanente NorCal,Epic (HealthConnect),3600 Broadway,Oakland,CA,94611,888-457-4872,,
+John Muir Medical Center Walnut Creek,John Muir Health,Epic,1601 Ygnacio Valley Rd,Walnut Creek,CA,94598,925-941-2222,,
+John Muir Medical Center Concord,John Muir Health,Epic,2540 East St,Concord,CA,94620,925-941-2222,,
+San Mateo Medical Center,San Mateo County Health,Epic,222 W 39th Ave,San Mateo,CA,94403,650-573-2222,rbailey1@smcgov.org,CIO email public on job postings
