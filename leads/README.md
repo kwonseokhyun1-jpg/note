@@ -4,7 +4,7 @@
 
 | File | Description |
 |------|-------------|
-| `apollo-erp-sap-b2b-cims-us-leads.csv` | 39 US-first prospects with LinkedIn URLs (public research) |
+| `rasayel-fibery-ziwo-customers.csv` | Public customer lists for Rasayel, Fibery, and Ziwo (case studies / success stories) |
 | `apollo_enrich_leads.py` | Apollo API script to pull + enrich emails when `APOLLO_API_KEY` is set |
 | `vendor-customers-raw.csv` | Public customers of Rex, Nanonets, TRM, Medius, Giga, etc. (87 vendor-customer pairs) |
 | `vendor-customer-finance-it-contacts.csv` | Apollo-enriched CIO / VP Finance / VP Security at those customer companies |
@@ -57,6 +57,21 @@ Enrich the existing seed list:
 python3 leads/apollo_enrich_leads.py \
   --input leads/apollo-erp-sap-b2b-cims-us-leads.csv \
   --output leads/apollo-enriched-leads.csv
+```
+
+Bay Area Oracle Fusion/NetSuite outbound list (`bay-area-oracle-fusion-netsuite-leads.csv`):
+
+- Platforms: Oracle NetSuite or Oracle Fusion only (no SAP)
+- Geography: Bay Area offices
+- Revenue cap: **$7.5B** (2026 Fortune 500 threshold); excludes Williams-Sonoma, Kaiser, Blue Shield
+
+Enrich Bay Area Oracle Fusion/NetSuite leads (fills `Contact_Email` via Apollo):
+
+```bash
+python3 leads/apollo_enrich_leads.py \
+  --format bay-area \
+  --input leads/bay-area-oracle-fusion-netsuite-leads.csv \
+  --output leads/bay-area-oracle-fusion-netsuite-leads.csv
 ```
 
 `bulk_match` uses Apollo credits for verified emails.
