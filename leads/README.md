@@ -59,4 +59,19 @@ python3 leads/apollo_enrich_leads.py \
   --output leads/apollo-enriched-leads.csv
 ```
 
+Bay Area Oracle Fusion/NetSuite outbound list (`bay-area-oracle-fusion-netsuite-leads.csv`):
+
+- Platforms: Oracle NetSuite or Oracle Fusion only (no SAP)
+- Geography: Bay Area offices
+- Revenue cap: **$7.5B** (2026 Fortune 500 threshold); excludes Williams-Sonoma, Kaiser, Blue Shield
+
+Enrich Bay Area Oracle Fusion/NetSuite leads (fills `Contact_Email` via Apollo):
+
+```bash
+python3 leads/apollo_enrich_leads.py \
+  --format bay-area \
+  --input leads/bay-area-oracle-fusion-netsuite-leads.csv \
+  --output leads/bay-area-oracle-fusion-netsuite-leads.csv
+```
+
 `bulk_match` uses Apollo credits for verified emails.
