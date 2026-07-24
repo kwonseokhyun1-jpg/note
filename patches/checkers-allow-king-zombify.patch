@@ -1,0 +1,107 @@
+From 700b8e2bc77c66d84319641cd71fb350ea38e296 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Fri, 17 Jul 2026 20:30:55 +0000
+Subject: [PATCH] Allow kings to be targeted by Zombify
+
+Zombify previously rejected kings in both targeting and the effect
+handler. Kings can now be cursed like men; they sleep one turn and
+wake as zombie kings with the same spreading capture curse.
+---
+ SPELLS.md                |  2 +-
+ js/cardEffectHandlers.js |  2 +-
+ js/cardEffectTags.js     |  2 +-
+ js/cardEffects.js        |  2 +-
+ js/cardRegistry.js       |  2 +-
+ scripts/test-zombify.mjs | 15 +++++++++++++++
+ 6 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/SPELLS.md b/SPELLS.md
+index bf363fc..67ee35e 100644
+--- a/SPELLS.md
++++ b/SPELLS.md
+@@ -147,5 +147,5 @@
+ 
+ ## Legendary
+ 
+-- **Zombify** — Curse one of your men; it sleeps in a gravestone for 1 turn, then rises as a zombie king. Any piece it captures becomes zombified. Horde zombies persist even if the king falls.
++- **Zombify** — Curse one of your pieces; it sleeps in a gravestone for 1 turn, then rises as a zombie king. Any piece it captures becomes zombified. Horde zombies persist even if the king falls.
+ 
+diff --git a/js/cardEffectHandlers.js b/js/cardEffectHandlers.js
+index ff9aabd..6557b58 100644
+--- a/js/cardEffectHandlers.js
++++ b/js/cardEffectHandlers.js
+@@ -757,7 +757,7 @@ const EFFECTS = {
+   zombify(state, color, picks) {
+     const [r, c] = p0(picks);
+     const p = at(state, r, c);
+-    if (!p || p.color !== color || p.king) return fail();
++    if (!p || p.color !== color) return fail();
+     if (isFortified(p)) return fail("Fortified");
+     if (p.isZombie) return fail("Already a zombie");
+     const hadBear = p.bearAwakened;
+diff --git a/js/cardEffectTags.js b/js/cardEffectTags.js
+index d67f787..89f63c6 100644
+--- a/js/cardEffectTags.js
++++ b/js/cardEffectTags.js
+@@ -37,7 +37,7 @@ const TAGS = {
+   plague: ["Infect your piece + adjacent pieces", "Seed spreads plague on every move", "All infected die in 2 owner turns"],
+   press: ["Opponent must move again after their normal move on their next turn", "Extra step cannot capture"],
+   mind_control: ["Convert an enemy man to your color for 2 of your turns", "Reverts to the enemy afterward"],
+-  zombify: ["Curse one of your men — sleeps in a gravestone for 1 turn", "Rises as a zombie king that zombifies captures", "Horde zombies persist even if the king falls"],
++  zombify: ["Curse one of your pieces — sleeps in a gravestone for 1 turn", "Rises as a zombie king that zombifies captures", "Horde zombies persist even if the king falls"],
+   barrier: ["Place on any dark square", "Blocks enemies for 2 turn cycles"],
+   vengeance: ["Hidden trap — destroys the next enemy who captures your piece", "Expires after 2 of your turn cycles if unused", "Your piece survives 2 turns (blood counters), then dies"],
+   hibernation: ["Sleep 2 turns (immobile)", "Wake with Awoken Bear mark", "Extra move every turn after"],
+diff --git a/js/cardEffects.js b/js/cardEffects.js
+index b4a5187..dcc8fec 100644
+--- a/js/cardEffects.js
++++ b/js/cardEffects.js
+@@ -964,7 +964,7 @@ export function getValidTargets(state, color, card, picks) {
+           if (card.effect === "random_teleport" && !randomTeleportHasDestination(state, r, c)) continue;
+           if (card.effect === "iron_will" && !pieceHasIronWillDebuff(p)) continue;
+           if (card.effect === "zombify") {
+-            if (p.king || isFortified(p) || p.isZombie) continue;
++            if (isFortified(p) || p.isZombie) continue;
+           }
+           res.push([r, c]);
+         }
+diff --git a/js/cardRegistry.js b/js/cardRegistry.js
+index ac6bc52..c456b20 100644
+--- a/js/cardRegistry.js
++++ b/js/cardRegistry.js
+@@ -87,7 +87,7 @@ export const CARD_REGISTRY = [
+   { id: "chain_lightning", name: "Chain Lightning", desc: "Destroy up to 2 chained adjacent enemies from your piece.", rarity: "legendary", weight: 1, mode: "friendly", effect: "chain_lightning" },
+   { id: "revive", name: "Revive", desc: "Return your most recently captured man to any empty dark square on your side of the board; no capture the turn it returns.", rarity: "legendary", weight: 1, mode: "empty", effect: "revive" },
+   { id: "mind_control", name: "Mind Control", desc: "Convert an enemy man to your color for 2 of your turns, then it reverts to the enemy.", rarity: "epic", weight: 2, mode: "enemy", effect: "mind_control" },
+-  { id: "zombify", name: "Zombify", desc: "Curse one of your men — it sleeps in a gravestone for 1 turn, then rises as a zombie king. Any piece it captures becomes zombified.", rarity: "legendary", weight: 1, mode: "friendly", effect: "zombify" },
++  { id: "zombify", name: "Zombify", desc: "Curse one of your pieces — it sleeps in a gravestone for 1 turn, then rises as a zombie king. Any piece it captures becomes zombified.", rarity: "legendary", weight: 1, mode: "friendly", effect: "zombify" },
+   { id: "cull", name: "Cull", desc: "Destroy the weakest enemy (non-king preferred).", rarity: "epic", weight: 2, mode: "instant", effect: "cull" },
+   { id: "execution", name: "Execution", desc: "Destroy an enemy piece that has no legal moves.", rarity: "rare", weight: 3, mode: "enemy", effect: "execution" },
+   { id: "snipe", name: "Snipe", desc: "Destroy an enemy 3+ squares away on a diagonal with nothing between.", rarity: "uncommon", weight: 4, mode: "enemy", effect: "snipe" },
+diff --git a/scripts/test-zombify.mjs b/scripts/test-zombify.mjs
+index 29de326..7db5819 100644
+--- a/scripts/test-zombify.mjs
++++ b/scripts/test-zombify.mjs
+@@ -125,4 +125,19 @@ assert.notEqual(
+   "each zombie king should lead its own horde"
+ );
+ 
++// Kings can be zombified — they sleep, then remain (or reaffirm) as zombie kings.
++const boardKing = Array.from({ length: 8 }, () => Array(8).fill(null));
++const stateKing = emptyState(boardKing);
++place(boardKing, 5, 0, COLORS.RED, true);
++const kingCurse = applyEffect(stateKing, COLORS.RED, "zombify", [[5, 0]]);
++assert.equal(kingCurse.success, true, kingCurse.message || "zombify should allow kings");
++const cursedKing = boardKing[5][0];
++assert.equal(cursedKing.isMainZombie, true);
++assert.equal(cursedKing.zombieSleepTurns, 1);
++assert.equal(cursedKing.king, true, "king status is kept while sleeping");
++tickEffects(boardKing, COLORS.RED, stateKing);
++assert.equal(cursedKing.zombieSleepTurns, 0);
++assert.equal(cursedKing.king, true, "king stays a zombie king after wake");
++assert.equal(isAwakeZombie(cursedKing), true);
++
+ console.log("Zombify mechanic test: OK");
+-- 
+2.43.0
+
