@@ -5,6 +5,9 @@
 | File | Description |
 |------|-------------|
 | `apollo-erp-sap-b2b-cims-us-leads.csv` | 39 US-first prospects with LinkedIn URLs (public research) |
+| `ai-agent-eo-insurance-providers.csv` | AI / agent insurance providers, brokers, and certified insured AI vendors |
+| `ai-agent-insurance-onboarding.csv` | Onboarding flows, timelines, and requirements for getting an AI agent insured |
+| `ai-agent-insurance-onboarding.docx` | Word version of the onboarding guide (generate via `python3 leads/generate_onboarding_docx.py`) |
 | `apollo_enrich_leads.py` | Apollo API script to pull + enrich emails when `APOLLO_API_KEY` is set |
 | `vendor-customers-raw.csv` | Public customers of Rex, Nanonets, TRM, Medius, Giga, etc. (87 vendor-customer pairs) |
 | `vendor-customer-finance-it-contacts.csv` | Apollo-enriched CIO / VP Finance / VP Security at those customer companies |
