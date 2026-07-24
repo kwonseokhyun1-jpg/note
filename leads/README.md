@@ -6,6 +6,9 @@
 |------|-------------|
 | `apollo-erp-sap-b2b-cims-us-leads.csv` | 39 US-first prospects with LinkedIn URLs (public research) |
 | `apollo_enrich_leads.py` | Apollo API script to pull + enrich emails when `APOLLO_API_KEY` is set |
+| `vendor-customers-raw.csv` | Public customers of Rex, Nanonets, TRM, Medius, Giga, etc. (87 vendor-customer pairs) |
+| `vendor-customer-finance-it-contacts.csv` | Apollo-enriched CIO / VP Finance / VP Security at those customer companies |
+| `apollo_enrich_vendor_customers.py` | Regenerate vendor customer contact enrichment via Apollo |
 | `populate_google_sheet.py` | Writes CSV to Google Sheets via service account |
 
 ## Google Sheet
