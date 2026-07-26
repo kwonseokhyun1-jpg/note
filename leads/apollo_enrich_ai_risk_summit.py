@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Parse AI Risk Summit speakers and enrich with Apollo emails."""
+"""AI Risk Summit 2026: speakers + sponsor contacts enriched via Apollo (email + LinkedIn)."""
 
 from __future__ import annotations
 
 import csv
 import os
-import re
 import sys
 import time
 from typing import Any
@@ -101,29 +100,111 @@ SPONSORS = [
 ]
 
 DOMAIN_MAP = {
-    "Intel": "intel.com", "PwC": "pwc.com", "Vanguard": "vanguard.com", "NVIDIA": "nvidia.com",
-    "Meta": "meta.com", "F5": "f5.com", "Adobe": "adobe.com", "Microsoft": "microsoft.com",
-    "Broadcom": "broadcom.com", "Donnelley Financial Solutions (DFIN)": "dfinsolutions.com",
-    "Akto IO": "akto.io", "Navy Federal Credit Union": "navyfederal.org",
-    "Delinea": "delinea.com", "Scale AI": "scale.com", "Amazon AWS": "amazon.com",
-    "Amazon": "amazon.com", "Google": "google.com", "Salesforce": "salesforce.com",
-    "Airbnb": "airbnb.com", "Deloitte": "deloitte.com", "Oracle AI": "oracle.com",
-    "Check Point": "checkpoint.com", "Sagility Health": "sagilityhealth.com",
-    "HiddenLayer": "hiddenlayer.com", "Nudge Security": "nudgesecurity.com",
-    "Rubrik": "rubrik.com", "Socure": "socure.com", "Kodem Security": "kodemsecurity.com",
-    "Horizon3.ai": "horizon3.ai", "Sardine": "sardine.ai", "TELUS Digital": "telusdigital.com",
-    "Intel": "intel.com", "Protegrity": "protegrity.com", "Mphasis": "mphasis.com",
-    "Net Health": "nethealth.com", "Crescendo": "crescendo.ai", "StackGen": "stackgen.com",
-    "LRQA": "lrqa.com", "Keyrock": "keyrock.eu", "Tenet Security": "tenetsecurity.com",
-    "Prompt Security (SentinelOne)": "prompt.security",
+    "Intel": "intel.com",
+    "PwC": "pwc.com",
+    "Vanguard": "vanguard.com",
+    "NVIDIA": "nvidia.com",
+    "Meta": "meta.com",
+    "F5": "f5.com",
+    "Adobe": "adobe.com",
+    "Microsoft": "microsoft.com",
+    "Broadcom": "broadcom.com",
+    "Donnelley Financial Solutions (DFIN)": "dfinsolutions.com",
+    "Akto IO": "akto.io",
+    "Navy Federal Credit Union": "navyfederal.org",
+    "Delinea": "delinea.com",
+    "Scale AI": "scale.com",
+    "Amazon AWS": "amazon.com",
+    "Amazon": "amazon.com",
+    "Google": "google.com",
+    "Google (Mandiant)": "google.com",
+    "Salesforce": "salesforce.com",
+    "Airbnb": "airbnb.com",
+    "Deloitte": "deloitte.com",
+    "Oracle AI": "oracle.com",
+    "Check Point": "checkpoint.com",
+    "Sagility Health": "sagility.com",
+    "HiddenLayer": "hiddenlayer.com",
+    "Nudge Security": "nudgesecurity.com",
+    "Rubrik": "rubrik.com",
+    "Socure": "socure.com",
+    "Kodem Security": "kodemsecurity.com",
+    "Horizon3.ai": "horizon3.ai",
+    "Sardine": "sardine.ai",
+    "TELUS Digital": "telusdigital.com",
+    "Protegrity": "protegrity.com",
+    "Mphasis": "mphasis.com",
+    "Net Health": "nethealth.com",
+    "Crescendo": "crescendo.ai",
+    "StackGen": "stackgen.com",
+    "LRQA": "lrqa.com",
+    "Keyrock": "keyrock.eu",
+    "Tenet Security": "tenetsecurity.ai",
+    "Prompt Security (SentinelOne)": "sentinelone.com",
+    "Fixin Security": "fixinsecurity.com",
+    "CyRIsk": "cyrisk.com",
+    "Software & Information Industry Association (SIIA)": "siia.net",
+    "Capitol Technology University": "captechu.edu",
+    "Foundation for Defense of Democracies": "fdd.org",
+    "Commvault": "commvault.com",
+    "Fleak": "fleak.ai",
+    "Factory": "factory.ai",
+    "Adaptive Security": "adaptivesecurity.com",
+    "ThreatLocker": "threatlocker.com",
 }
+
+SPONSOR_TITLES = [
+    "chief information security officer",
+    "ciso",
+    "vp security",
+    "vice president security",
+    "head of ai security",
+    "head of security",
+    "vp product security",
+    "director security",
+    "chief technology officer",
+    "cto",
+    "chief executive officer",
+    "ceo",
+    "chief revenue officer",
+    "cro",
+    "vp sales",
+    "head of marketing",
+]
+
+FIELDNAMES = [
+    "Role_Type", "Name", "Title", "Company", "Session", "Email", "LinkedIn_URL",
+    "Location", "Apollo_ID", "Source_URL", "Notes",
+]
 
 
 def headers(api_key: str) -> dict[str, str]:
-    return {"Content-Type": "application/json", "Cache-Control": "no-cache", "accept": "application/json", "x-api-key": api_key}
+    return {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "accept": "application/json",
+        "x-api-key": api_key,
+    }
 
 
-def match_person(api_key: str, first: str, last: str, org: str, domain: str | None) -> dict | None:
+def person_fields(person: dict[str, Any]) -> dict[str, str]:
+    return {
+        "Email": person.get("email") or "",
+        "LinkedIn_URL": person.get("linkedin_url") or "",
+        "Location": ", ".join(
+            x for x in [person.get("city"), person.get("state"), person.get("country")] if x
+        ),
+        "Apollo_ID": person.get("id") or "",
+    }
+
+
+def match_person(
+    api_key: str,
+    first: str,
+    last: str,
+    org: str,
+    domain: str | None,
+) -> dict[str, Any] | None:
     payload: dict[str, Any] = {
         "first_name": first,
         "last_name": last,
@@ -132,10 +213,48 @@ def match_person(api_key: str, first: str, last: str, org: str, domain: str | No
     if domain:
         payload["organization_name"] = org
         payload["domain"] = domain
-    resp = requests.post(f"{API_BASE}/people/match", headers=headers(api_key), json=payload, timeout=60)
+    resp = requests.post(
+        f"{API_BASE}/people/match",
+        headers=headers(api_key),
+        json=payload,
+        timeout=60,
+    )
     if resp.status_code not in (200, 201):
         return None
     return resp.json().get("person")
+
+
+def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
+    url = (
+        f"{API_BASE}/people/match?linkedin_url={quote(linkedin_url)}"
+        "&reveal_personal_emails=false"
+    )
+    resp = requests.post(url, headers=headers(api_key), timeout=60)
+    if resp.status_code not in (200, 201):
+        return None
+    return resp.json().get("person")
+
+
+def enrich_by_id(api_key: str, person_id: str) -> dict[str, Any] | None:
+    resp = requests.post(
+        f"{API_BASE}/people/match",
+        headers=headers(api_key),
+        json={"id": person_id, "reveal_personal_emails": False},
+        timeout=60,
+    )
+    if resp.status_code not in (200, 201):
+        return None
+    return resp.json().get("person")
+
+
+def search_sponsor_contacts(api_key: str, domain: str) -> list[dict[str, Any]]:
+    url = f"{API_BASE}/mixed_people/api_search?q_organization_domains_list[]={quote(domain)}&per_page=15&page=1"
+    for title in SPONSOR_TITLES:
+        url += f"&person_titles[]={quote(title)}"
+    resp = requests.post(url, headers=headers(api_key), timeout=60)
+    if resp.status_code != 200:
+        return []
+    return resp.json().get("people") or []
 
 
 def split_name(full: str) -> tuple[str, str]:
@@ -145,39 +264,98 @@ def split_name(full: str) -> tuple[str, str]:
     return parts[0], " ".join(parts[1:])
 
 
+def enrich_speaker(api_key: str, name: str, company: str) -> dict[str, str]:
+    first, last = split_name(name)
+    domain = DOMAIN_MAP.get(company)
+    person: dict[str, Any] | None = None
+
+    if last:
+        person = match_person(api_key, first, last, company, domain)
+        time.sleep(0.35)
+
+    if person and not person.get("email") and person.get("linkedin_url"):
+        linked = match_by_linkedin(api_key, person["linkedin_url"])
+        time.sleep(0.35)
+        if linked:
+            person = linked
+
+    if person and not person.get("email") and person.get("id"):
+        enriched = enrich_by_id(api_key, person["id"])
+        time.sleep(0.35)
+        if enriched:
+            person = enriched
+
+    if not person or (not person.get("email") and not person.get("linkedin_url")):
+        if last and domain:
+            person = match_person(api_key, first, last, company, None)
+            time.sleep(0.35)
+
+    if not person:
+        return {"Email": "", "LinkedIn_URL": "", "Location": "", "Apollo_ID": ""}
+    return person_fields(person)
+
+
+def enrich_sponsor_person(api_key: str, person: dict[str, Any]) -> dict[str, str] | None:
+    pid = person.get("id")
+    if not pid:
+        return None
+    enriched = enrich_by_id(api_key, pid)
+    time.sleep(0.35)
+    if not enriched:
+        return None
+    if not enriched.get("email") and not enriched.get("linkedin_url"):
+        return None
+    name = " ".join(x for x in [enriched.get("first_name"), enriched.get("last_name")] if x)
+    return {
+        "Role_Type": "Sponsor Contact",
+        "Name": name,
+        "Title": enriched.get("title") or "",
+        "Company": enriched.get("organization", {}).get("name") or person.get("organization_name") or "",
+        "Session": "",
+        "Email": enriched.get("email") or "",
+        "LinkedIn_URL": enriched.get("linkedin_url") or "",
+        "Location": ", ".join(
+            x for x in [enriched.get("city"), enriched.get("state"), enriched.get("country")] if x
+        ),
+        "Apollo_ID": enriched.get("id") or "",
+        "Source_URL": "https://www.airisksummit.com/sponsors/",
+        "Notes": "Likely sponsor booth attendee (Apollo security/exec search)",
+    }
+
+
 def main() -> None:
     api_key = os.environ.get("APOLLO_API_KEY", "").strip()
+    if not api_key:
+        print("Set APOLLO_API_KEY", file=sys.stderr)
+        sys.exit(1)
+
     out = "leads/ai-risk-summit-2026-attendees.csv"
-
     rows: list[dict[str, str]] = []
+    seen_apollo: set[str] = set()
 
+    print("Enriching speakers...")
     for name, title, company, session in SPEAKERS:
-        first, last = split_name(name)
-        domain = DOMAIN_MAP.get(company)
-        email, linkedin, location, apollo_id = "", "", "", ""
-        if api_key and last:
-            person = match_person(api_key, first, last, company, domain)
-            if person:
-                email = person.get("email") or ""
-                linkedin = person.get("linkedin_url") or ""
-                location = ", ".join(x for x in [person.get("city"), person.get("state"), person.get("country")] if x)
-                apollo_id = person.get("id") or ""
-            time.sleep(0.4)
+        fields = enrich_speaker(api_key, name, company)
+        if fields.get("Apollo_ID"):
+            seen_apollo.add(fields["Apollo_ID"])
         rows.append({
             "Role_Type": "Speaker",
             "Name": name,
             "Title": title,
             "Company": company,
             "Session": session,
-            "Email": email,
-            "LinkedIn_URL": linkedin,
-            "Location": location,
-            "Apollo_ID": apollo_id,
+            "Email": fields["Email"],
+            "LinkedIn_URL": fields["LinkedIn_URL"],
+            "Location": fields["Location"],
+            "Apollo_ID": fields["Apollo_ID"],
             "Source_URL": "https://www.airisksummit.com/speakers/",
             "Notes": "Confirmed speaker Aug 11-12 2026 Half Moon Bay",
         })
+        has = "email" if fields["Email"] else ("linkedin" if fields["LinkedIn_URL"] else "none")
+        print(f"  {name}: {has}")
 
-    for company, tier, website in SPONSORS:
+    print("\nSearching sponsor companies...")
+    for company, tier, domain in SPONSORS:
         rows.append({
             "Role_Type": "Sponsor",
             "Name": "",
@@ -189,17 +367,46 @@ def main() -> None:
             "Location": "",
             "Apollo_ID": "",
             "Source_URL": "https://www.airisksummit.com/sponsors/",
-            "Notes": f"Sponsor booth staff likely attending; website {website}",
+            "Notes": f"Sponsor booth staff likely attending; website {domain}",
         })
 
-    fieldnames = ["Role_Type", "Name", "Title", "Company", "Session", "Email", "LinkedIn_URL", "Location", "Apollo_ID", "Source_URL", "Notes"]
+        people = search_sponsor_contacts(api_key, domain)
+        time.sleep(0.5)
+        added = 0
+        for person in people:
+            pid = person.get("id")
+            if not pid or pid in seen_apollo:
+                continue
+            if not person.get("has_email") and not person.get("linkedin_url"):
+                continue
+            row = enrich_sponsor_person(api_key, person)
+            if not row:
+                continue
+            row["Company"] = company
+            row["Notes"] = f"{tier}; likely booth attendee ({domain})"
+            seen_apollo.add(pid)
+            rows.append(row)
+            added += 1
+            if added >= 4:
+                break
+        print(f"  {company}: {added} contacts")
+
     with open(out, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
         w.writeheader()
         w.writerows(rows)
 
+    speakers = [r for r in rows if r["Role_Type"] == "Speaker"]
+    sponsor_contacts = [r for r in rows if r["Role_Type"] == "Sponsor Contact"]
     emails = sum(1 for r in rows if r["Email"])
-    print(f"Wrote {len(rows)} rows ({emails} with emails) to {out}")
+    linkedins = sum(1 for r in rows if r["LinkedIn_URL"])
+    print(
+        f"\nWrote {len(rows)} rows to {out}\n"
+        f"  Speakers: {len(speakers)} ({sum(1 for r in speakers if r['Email'])} emails, "
+        f"{sum(1 for r in speakers if r['LinkedIn_URL'])} LinkedIn)\n"
+        f"  Sponsor contacts: {len(sponsor_contacts)}\n"
+        f"  Total with email: {emails}, with LinkedIn: {linkedins}"
+    )
 
 
 if __name__ == "__main__":
