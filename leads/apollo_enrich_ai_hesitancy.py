@@ -7,10 +7,14 @@ import csv
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
 import requests
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ai_hesitancy_companies_extra import EXTRA_COMPANIES, EXTRA_KNOWN_EXECUTIVES
 
 API_BASE = "https://api.apollo.io/api/v1"
 
@@ -59,7 +63,7 @@ COMPANIES: list[dict[str, str]] = [
         "Company": "Microsoft",
         "Domain": "microsoft.com",
         "Stage": "Enterprise",
-        "Hesitancy_Summary": "CEO Satya Nadella warned enterprises against outsourcing core thinking to a single AI provider and urged retaining data ownership.",
+        "Hesitancy_Summary": "Slowing/pausing some AI data-center projects; Nadella also warned against outsourcing core thinking to a single AI provider.",
         "Source_URL": "https://techcrunch.com/2026/07/27/satya-nadella-says-companies-that-trust-one-ai-for-everything-may-not-survive/",
         "Statement_Date": "2026-07",
     },
@@ -175,6 +179,7 @@ COMPANIES: list[dict[str, str]] = [
         "Source_URL": "https://www.bloomberg.com/news/articles/2023-04-30/spotify-removes-tens-of-thousands-of-ai-made-songs",
         "Statement_Date": "2023-04",
     },
+    *EXTRA_COMPANIES,
 ]
 
 TARGET_ROLES = ("CEO", "CSO", "CISO", "CIO", "VP Cybersecurity")
@@ -240,6 +245,7 @@ KNOWN_EXECUTIVES: dict[str, dict[str, tuple[str, str]]] = {
     "morganstanley.com": {"CEO": ("Ted", "Pick")},
     "disney.com": {"CEO": ("Bob", "Iger")},
     "spotify.com": {"CEO": ("Daniel", "Ek")},
+    **EXTRA_KNOWN_EXECUTIVES,
 }
 
 KNOWN_LINKEDIN: dict[str, dict[str, str]] = {
@@ -436,6 +442,20 @@ def person_row(co: dict[str, str], role: str, person: dict[str, Any]) -> dict[st
     }
 
 
+def email_plausible(email: str, domain: str) -> bool:
+    if not email or "@" not in email:
+        return True
+    local, _, host = email.lower().partition("@")
+    if not host:
+        return False
+    bad_hosts = {"gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "munsen.net", "opsline.com"}
+    if host in bad_hosts:
+        return False
+    root = domain.lower().removeprefix("www.").split("/")[0]
+    base = root.split(".")[0]
+    return base in host or host.endswith(root) or host.endswith(root.split(".", 1)[-1])
+
+
 def find_role_contact(api_key: str, co: dict[str, str], role: str) -> dict[str, str] | None:
     domain = co["Domain"]
     company = co["Company"]
@@ -448,14 +468,18 @@ def find_role_contact(api_key: str, co: dict[str, str], role: str) -> dict[str, 
             matched_last = (person.get("last_name") or "").lower()
             expected_last = last.lower()
             if matched_last.startswith(expected_last[:3]) or expected_last in matched_last:
-                return person_row(co, role, person)
+                row = person_row(co, role, person)
+                if email_plausible(row["Email"], domain):
+                    return row
 
     linkedin = KNOWN_LINKEDIN.get(domain, {}).get(role)
     if linkedin:
         person = match_by_linkedin(api_key, linkedin)
         time.sleep(0.35)
         if person and (person.get("email") or person.get("linkedin_url")):
-            return person_row(co, role, person)
+            row = person_row(co, role, person)
+            if email_plausible(row["Email"], domain):
+                return row
 
     for candidate in search_by_role(api_key, domain, role):
         pid = candidate.get("id")
@@ -471,7 +495,9 @@ def find_role_contact(api_key: str, co: dict[str, str], role: str) -> dict[str, 
         if person and (person.get("email") or person.get("linkedin_url")):
             title = person.get("title") or cand_title
             if title_matches_role(title, role):
-                return person_row(co, role, person)
+                row = person_row(co, role, person)
+                if email_plausible(row["Email"], domain):
+                    return row
     return None
 
 
