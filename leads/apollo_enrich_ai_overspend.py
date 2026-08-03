@@ -170,6 +170,46 @@ COMPANIES: list[dict[str, str]] = [
         "Source_URL": "https://www.classcentral.com/report/genai-costs-hurt-duolingo-margins/",
         "Complaint_Date": "2025-11",
     },
+    {
+        "Company": "Mercor",
+        "Domain": "mercor.com",
+        "Stage": "Series C",
+        "Complaint_Summary": "CEO Brendan Foody: internal AI agent token spend now exceeds total employee payroll; expects inference costs to rival labor spend industry-wide.",
+        "Source_URL": "https://www.businessinsider.com/ai-startup-mercor-spends-more-on-tokens-than-payroll-2026-6",
+        "Complaint_Date": "2026-06",
+    },
+    {
+        "Company": "Swan AI",
+        "Domain": "getswan.com",
+        "Stage": "Series A",
+        "Complaint_Summary": "CEO Amos Bar-Joseph shared $113K monthly Anthropic invoice; four-person team runs seven-figure ARR while AI token spend replaces headcount growth.",
+        "Source_URL": "https://www.businessinsider.com/startup-ceo-monthly-ai-bill-anthropic-swan-2026-4",
+        "Complaint_Date": "2026-04",
+    },
+    {
+        "Company": "Accenture",
+        "Domain": "accenture.com",
+        "Stage": "Enterprise",
+        "Complaint_Summary": "Leaked internal audio: non-engineers drive heaviest token use; building Token IQ product after enterprise AI bills outpaced forecasts.",
+        "Source_URL": "https://aiweekly.co/alerts/uber-walmart-impose-ai-token-caps-as-enterprise-costs-surge",
+        "Complaint_Date": "2026-06",
+    },
+    {
+        "Company": "Snowflake",
+        "Domain": "snowflake.com",
+        "Stage": "Public",
+        "Complaint_Summary": "CEO Sridhar Ramaswamy publicly compared frontier vs. cheaper model economics as startups ditch Claude over unsustainable API bills.",
+        "Source_URL": "https://the-decoder.com/ai-startup-lindy-ditched-claude-entirely-for-deepseek-saving-millions-as-cost-pressure-mounts-on-anthropic/",
+        "Complaint_Date": "2026-06",
+    },
+    {
+        "Company": "AISquared",
+        "Domain": "squared.ai",
+        "Stage": "Series B",
+        "Complaint_Summary": "CEO Darren Kimura said frontier-model spending has peaked; enterprises must route simple tasks to cheaper models as variable token bills surge.",
+        "Source_URL": "https://metapress.net/world/2026/06/26/openai-and-anthropic-face-new-ai-reality-as-companies-shift-from-tokenmaxxing-to-efficiency/",
+        "Complaint_Date": "2026-06",
+    },
 ]
 
 TARGET_TITLES = {
@@ -195,7 +235,7 @@ KNOWN_EXECUTIVES: dict[str, dict[str, tuple[str, str]]] = {
     "coinbase.com": {"CEO": ("Brian", "Armstrong"), "CFO": ("Alesia", "Haas")},
     "amazon.com": {"CEO": ("Andy", "Jassy"), "CFO": ("Brian", "Olsavsky")},
     "meta.com": {"CEO": ("Mark", "Zuckerberg"), "CFO": ("Susan", "Li")},
-    "bookingholdings.com": {"CEO": ("Glenn", "Fogel"), "CFO": ("Ewout", "Steedman")},
+    "bookingholdings.com": {"CEO": ("Glenn", "Fogel"), "CFO": ("David", "Goulden")},
     "8090.ai": {"CEO": ("Chamath", "Palihapitiya")},
     "lindy.ai": {"CEO": ("Flo", "Crivello")},
     "usepylon.com": {"CEO": ("Marty", "Kausas")},
@@ -206,6 +246,11 @@ KNOWN_EXECUTIVES: dict[str, dict[str, tuple[str, str]]] = {
     "sentinelone.com": {"CEO": ("Tomer", "Weingarten"), "CFO": ("Sonalee", "Parekh")},
     "duolingo.com": {"CEO": ("Luis", "von Ahn"), "CFO": ("James", "Gear Jr.")},
     "priceline.com": {"CEO": ("Brigit", "Zimmerman"), "CFO": ("Matthew", "Tynan")},
+    "mercor.com": {"CEO": ("Brendan", "Foody"), "Head of AI": ("Adarsh", "Hiremath")},
+    "getswan.com": {"CEO": ("Amos", "Bar-Joseph")},
+    "accenture.com": {"CEO": ("Julie", "Sweet"), "CFO": ("Krishnan", "Shankar")},
+    "snowflake.com": {"CEO": ("Sridhar", "Ramaswamy"), "CFO": ("Michael", "Scarpelli")},
+    "squared.ai": {"CEO": ("Darren", "Kimura")},
 }
 
 FIELDNAMES = [
@@ -224,6 +269,41 @@ def headers(api_key: str) -> dict[str, str]:
     }
 
 
+# LinkedIn fallback when name+domain match returns wrong person
+KNOWN_LINKEDIN: dict[str, dict[str, str]] = {
+    "amazon.com": {"CEO": "http://www.linkedin.com/in/andyjassy"},
+}
+
+
+def match_by_linkedin(api_key: str, linkedin_url: str) -> dict[str, Any] | None:
+    url = (
+        f"{API_BASE}/people/match?linkedin_url={quote(linkedin_url)}"
+        "&reveal_personal_emails=false"
+    )
+    resp = apollo_post(api_key, url)
+    if resp is None or resp.status_code not in (200, 201):
+        return None
+    return resp.json().get("person")
+
+
+def apollo_post(api_key: str, url: str, *, json_payload: dict | None = None, retries: int = 3) -> requests.Response | None:
+    for attempt in range(retries):
+        try:
+            resp = requests.post(
+                url,
+                headers=headers(api_key),
+                json=json_payload,
+                timeout=90,
+            )
+            return resp
+        except requests.RequestException as exc:
+            if attempt + 1 == retries:
+                print(f"  Apollo request failed: {exc}", file=sys.stderr)
+                return None
+            time.sleep(2 ** attempt)
+    return None
+
+
 def match_person(
     api_key: str,
     first: str,
@@ -231,31 +311,63 @@ def match_person(
     org: str,
     domain: str,
 ) -> dict[str, Any] | None:
-    resp = requests.post(
+    resp = apollo_post(
+        api_key,
         f"{API_BASE}/people/match",
-        headers=headers(api_key),
-        json={
+        json_payload={
             "first_name": first,
             "last_name": last,
             "organization_name": org,
             "domain": domain,
             "reveal_personal_emails": False,
         },
-        timeout=60,
     )
-    if resp.status_code not in (200, 201):
+    if resp is None or resp.status_code not in (200, 201):
         return None
     return resp.json().get("person")
 
 
+def title_matches_role(title: str, role: str) -> bool:
+    t = title.lower()
+    if role == "CEO":
+        return any(
+            x in t
+            for x in [
+                "chief executive",
+                "ceo",
+                "founder",
+                "co-founder",
+                "cofounder",
+                "president & ceo",
+                "president and ceo",
+                "chairman and ceo",
+            ]
+        )
+    if role == "CFO":
+        return any(x in t for x in ["chief financial", "cfo"])
+    if role == "Head of AI":
+        return any(
+            x in t
+            for x in [
+                "ai",
+                "artificial intelligence",
+                "machine learning",
+                "chief ai",
+                "head of ai",
+                "vp ai",
+                "vp of ai",
+            ]
+        )
+    return True
+
+
 def enrich_person(api_key: str, person_id: str) -> dict[str, Any] | None:
-    resp = requests.post(
+    resp = apollo_post(
+        api_key,
         f"{API_BASE}/people/match",
-        headers=headers(api_key),
-        json={"id": person_id, "reveal_personal_emails": False},
-        timeout=60,
+        json_payload={"id": person_id, "reveal_personal_emails": False},
     )
-    if resp.status_code not in (200, 201):
+    if resp is None or resp.status_code not in (200, 201):
         return None
     return resp.json().get("person")
 
@@ -264,8 +376,8 @@ def search_by_role(api_key: str, domain: str, role: str) -> list[dict[str, Any]]
     url = f"{API_BASE}/mixed_people/api_search?q_organization_domains_list[]={quote(domain)}&per_page=15&page=1"
     for title in TARGET_TITLES[role]:
         url += f"&person_titles[]={quote(title)}"
-    resp = requests.post(url, headers=headers(api_key), timeout=60)
-    if resp.status_code != 200:
+    resp = apollo_post(api_key, url)
+    if resp is None or resp.status_code != 200:
         return []
     return resp.json().get("people") or []
 
@@ -300,18 +412,33 @@ def find_role_contact(api_key: str, co: dict[str, str], role: str) -> dict[str, 
         person = match_person(api_key, first, last, company, domain)
         time.sleep(0.35)
         if person and (person.get("email") or person.get("linkedin_url")):
+            matched_last = (person.get("last_name") or "").lower()
+            expected_last = last.lower()
+            if matched_last.startswith(expected_last[:3]) or expected_last in matched_last:
+                return person_row(co, role, person)
+
+    linkedin = KNOWN_LINKEDIN.get(domain, {}).get(role)
+    if linkedin:
+        person = match_by_linkedin(api_key, linkedin)
+        time.sleep(0.35)
+        if person and (person.get("email") or person.get("linkedin_url")):
             return person_row(co, role, person)
 
     for candidate in search_by_role(api_key, domain, role):
         pid = candidate.get("id")
         if not pid:
             continue
+        cand_title = candidate.get("title") or ""
+        if not title_matches_role(cand_title, role):
+            continue
         if not candidate.get("has_email") and not candidate.get("linkedin_url"):
             continue
         person = enrich_person(api_key, pid)
         time.sleep(0.35)
         if person and (person.get("email") or person.get("linkedin_url")):
-            return person_row(co, role, person)
+            title = person.get("title") or cand_title
+            if title_matches_role(title, role):
+                return person_row(co, role, person)
     return None
 
 
